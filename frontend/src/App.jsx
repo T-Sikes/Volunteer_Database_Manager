@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import EventManagement from "./pages/EventManagement.jsx"
 import UserProfile from "./pages/UserProfile.jsx"
+import VolunteerHistory from "./pages/VolunteerHistory.jsx"
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Routes>
                 <Route path='/event-management' element={<EventManagement/>} />
                 <Route path='/profile' element={<UserProfile/>} />
+                <Route path='/volunteer-history' element={<VolunteerHistory/>} />
         </Routes>
       </Router>
     </div>
