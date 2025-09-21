@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import EventManagement from "./pages/EventManagement.jsx"
+import UserProfile from "./pages/UserProfile.jsx"
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
         directory of the project */}
         <Routes>
                 <Route path='/event-management' element={<EventManagement/>} />
+                <Route path='/profile' element={<UserProfile/>} />
         </Routes>
       </Router>
     </div>
