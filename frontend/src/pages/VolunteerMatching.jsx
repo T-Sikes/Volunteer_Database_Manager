@@ -78,7 +78,7 @@ function VolunteerMatching({ volunteer = [], events = [] }) {
                   {matches.map((match, index) => (
                     <tr key={index} className="text-center">
                       <td className="py-2 px-4 border-b text-black">{match.volunteerName}</td>
-                      <td className="py-2 px-4 border-b text-black">{match.volunteerSkills.join{", "}}</td>
+                      <td className="py-2 px-4 border-b text-black">{match.volunteerSkills.join(", ")}</td>
                       <td className="py-2 px-4 border-b text-black">{match.eventName}</td>
                       <td className="py-2 px-4 border-b text-black">{match.eventDate}</td>
                       <td className="py-2 px-4 border-b text-black">{match.location}</td>
