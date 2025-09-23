@@ -1,4 +1,6 @@
 import { useState } from "react" 
+import Datepicker from "react-datepicker"
+import "react-datepicker/dist/react-datepicker.css"
 
 function EventForm(props) {
   // Hardcoded required skills for now
@@ -7,6 +9,7 @@ function EventForm(props) {
   const event = {
     name: null,
     description: null,
+    date: null,
     location: null,
     address: null,
     city: null,
@@ -18,6 +21,7 @@ function EventForm(props) {
 
   // State variable that stores data from the event form in an object
   const [eventData, setEventData] = useState(event)
+  const [selectedDate, setSelectedDate] = useState(new Date())
   
   // Updates event object whenever form data changes
   const handleChange = (e) => {
@@ -32,6 +36,7 @@ function EventForm(props) {
   // Pass event form data to parent component and close form when user clicks save
   const handleSave = (e) => {
     e.preventDefault()
+    eventData.date = selectedDate
     props.submitEventForm(eventData)
     props.closeEventForm()
   }
@@ -64,6 +69,18 @@ function EventForm(props) {
             className="border-2 rounded-lg border-gray-500"
           >
           </textarea>
+          
+          <label>Date</label>
+          <div className="border-2 rounded-lg border-gray-500">
+            <Datepicker 
+              selected={selectedDate} 
+              onChange={date => setSelectedDate(date)}
+              showMonthDropdown
+              showYearDropdown
+              scrollableYearDropdown
+              scrollableMonthYearDropdown
+            />
+          </div>
 
           <label>Location</label>
           <input
