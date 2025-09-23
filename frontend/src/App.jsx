@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import EventManagement from "./pages/EventManagement.jsx"
 import UserProfile from "./pages/UserProfile.jsx"
 import VolunteerHistory from "./pages/VolunteerHistory.jsx"
+import UserLogin from "./pages/UserLogin.jsx"
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
                 <Route path='/event-management' element={<EventManagement/>} />
                 <Route path='/profile' element={<UserProfile/>} />
                 <Route path='/volunteer-history' element={<VolunteerHistory/>} />
+                <Route path='/user-login' element={<UserLogin/>} />
         </Routes>
       </Router>
     </div>
