@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import NotificationSystem from "./NotificationSystem.jsx";
 
 export default function VolunteerMatchingForm({
   closeForm,
@@ -123,6 +124,11 @@ export default function VolunteerMatchingForm({
     };
 
     submitMatch(match);
+    
+    NotificationSystem.notifySuccess(
+      `✅ ${match.volunteerName} matched to ${match.eventName}`
+    );
+
     closeForm();
   };
 
