@@ -56,8 +56,8 @@ function EventManagement() {
 
 
   return (
-    <>
-      <div className="h-[650px] w-screen px-5 relative z-0">
+    <div className="h-screen w-screen">
+      <div className="h-[89%] w-screen px-5 relative z-0">
         <FullCalendar
           plugins={[ dayGridPlugin ]}
           initialView="dayGridMonth"
@@ -68,12 +68,12 @@ function EventManagement() {
         />
         {/* Only show event form if showEventForm is true */}
         {showEventForm && 
-          <div className="absolute inset-0 z-10">
+          <div className="absolute inset-0 z-10 bg-[rgba(0,0,0,0.5)] h-screen w-screen">
             <EventForm openedEvent={clickedEvent} submitEventForm={getEventFormData} closeEventForm={toggleEventForm}/>
           </div>
         }
       </div>
-      <div className="flex flex-col items-center h-screen w-screen">
+      <div className="flex justify-center h-fit mt-3">
         <button 
           onClick={() => {
             setClickedEvent({...blankEvent}) // Whenever a user clicks on "Add Event" the event data should be empty
@@ -83,7 +83,7 @@ function EventManagement() {
           Add Event
         </button>
       </div>  
-    </>
+    </div>
   )
 }
 
