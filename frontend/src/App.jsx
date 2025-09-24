@@ -3,6 +3,8 @@ import EventManagement from "./pages/EventManagement.jsx"
 import UserProfile from "./pages/UserProfile.jsx"
 import VolunteerHistory from "./pages/VolunteerHistory.jsx"
 import VolunteerMatchingForm from "./components/VolunteerMatchingForm.jsx"
+import NotificationPage from "./pages/Notification.jsx"
+import VolunteerMatching from "./pages/VolunteerMatching";
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
                 <Route path='/profile' element={<UserProfile/>} />
                 <Route path='/volunteer-history' element={<VolunteerHistory/>} />
                 <Route path='/volunteer-matching' element={<VolunteerMatchingForm/>} />
+                <Route path="/notifications" element={<NotificationPage />} />
+                <Route path="/volunteer-matching" element={<VolunteerMatching />} />
         </Routes>
       </Router>
     </div>
