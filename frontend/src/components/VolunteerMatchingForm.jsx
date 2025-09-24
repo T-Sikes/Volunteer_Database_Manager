@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { notifySuccess, notifyError } from "../components/NotificationService";
+
+// Mock notification functions since we don't have the actual service
+const notifySuccess = (message) => console.log("Success:", message);
+const notifyError = (message) => console.log("Error:", message);
 
 export default function VolunteerMatchingForm({
-  closeForm,
-  submitMatch,
+  closeForm = () => {},
+  submitMatch = (match) => console.log("Match submitted:", match),
   volunteers: parentVolunteers = [],
-  events: parentEvents = []
+  events: parentEvents = [],
 }) {
   // Hardcoded demo volunteers
   const hardcodedVolunteers = [
@@ -43,20 +46,25 @@ export default function VolunteerMatchingForm({
     },
   ];
 
-  const [volunteers, setVolunteers] = useState([...hardcodedVolunteers,...parentVolunteers,]);
+  const [volunteers, setVolunteers] = useState([
+    ...hardcodedVolunteers,
+    ...parentVolunteers,
+  ]);
   const [events, setEvents] = useState([...hardcodedEvents, ...parentEvents]);
 
   const [selectedVolunteer, setSelectedVolunteer] = useState(null);
   const [matchedEvents, setMatchedEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  // Simulate DB fetch on mount, will swap with real DB calls later
   useEffect(() => {
     async function fetchData() {
       try {
         const dbVolunteers = [
           { name: "Michael Jordan", skills: ["Public Speaking", "Mentoring"] },
-          { name: "Maria Gonzalez", skills: ["Bilingual/Multilingual", "Teaching"] },
+          {
+            name: "Maria Gonzalez",
+            skills: ["Bilingual/Multilingual", "Teaching"],
+          },
         ];
         const dbEvents = [
           {
@@ -73,10 +81,13 @@ export default function VolunteerMatchingForm({
           },
         ];
 
-        setVolunteers([...hardcodedVolunteers,...parentVolunteers,...dbVolunteers,]);
+        setVolunteers([
+          ...hardcodedVolunteers,
+          ...parentVolunteers,
+          ...dbVolunteers,
+        ]);
         setEvents([...hardcodedEvents, ...parentEvents, ...dbEvents]);
-      } 
-      catch (err) {
+      } catch (err) {
         console.error("Failed to fetch volunteers/events:", err);
       }
     }
@@ -84,7 +95,6 @@ export default function VolunteerMatchingForm({
     fetchData();
   }, [parentVolunteers, parentEvents]);
 
-  // Handle volunteer selection
   const handleVolunteerChange = (e) => {
     const volunteerName = e.target.value;
     const volunteer = volunteers.find((v) => v.name === volunteerName);
@@ -102,14 +112,12 @@ export default function VolunteerMatchingForm({
     }
   };
 
-  // Handle event selection
   const handleEventChange = (e) => {
     const eventName = e.target.value;
     const event = matchedEvents.find((ev) => ev.name === eventName);
     setSelectedEvent(event || null);
   };
 
-  // Handle submit
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -127,110 +135,115 @@ export default function VolunteerMatchingForm({
     };
 
     submitMatch(match);
-
     notifySuccess(`Matched ${selectedVolunteer.name} to ${selectedEvent.name}`);
-
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-          Volunteer Matching Form
-        </h2>
+    <div className="h-screen w-screen flex flex-col bg-gray-50 overflow-hidden">
+      {/* Page Header */}
+      <div className="flex-shrink-0 p-8 text-center">
+        <h1 className="text-4xl font-bold text-gray-800">
+          Volunteer Matching
+        </h1>
+      </div>
 
-        <form onSubmit={handleSubmit}>
-          {/* Volunteer Dropdown */}
-          <div className="mb-4">
-            <label className="block mb-2 text-gray-700 font-medium">
-              Volunteer Name
-            </label>
-            <select
-              value={selectedVolunteer ? selectedVolunteer.name : ""}
-              onChange={handleVolunteerChange}
-              className="w-full border-2 rounded-lg border-gray-300 p-3 text-gray-900 bg-white focus:border-blue-500 focus:outline-none"
-            >
-              <option value="">Select a volunteer</option>
-              {volunteers.map((volunteer) => (
-                <option key={volunteer.name} value={volunteer.name}>
-                  {volunteer.name}
-                </option>
-              ))}
-            </select>
+      <div className="flex-1 p-8">
+        <div className="bg-white rounded-lg shadow-lg p-10 h-full flex flex-col">
+          {/* Form Content */}
+          <div className="flex-1 space-y-6">
+            {/* Volunteer Dropdown */}
+            <div>
+              <label className="block mb-2 text-gray-700 font-medium">
+                Volunteer Name
+              </label>
+              <select
+                value={selectedVolunteer ? selectedVolunteer.name : ""}
+                onChange={handleVolunteerChange}
+                className="w-full border-2 rounded-lg border-gray-300 p-3 text-gray-900 bg-white focus:border-blue-500 focus:outline-none"
+              >
+                <option value="">Select a volunteer</option>
+                {volunteers.map((volunteer) => (
+                  <option key={volunteer.name} value={volunteer.name}>
+                    {volunteer.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {selectedVolunteer && (
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  <strong>Skills:</strong> {selectedVolunteer.skills.join(", ")}
+                </p>
+              </div>
+            )}
+
+            {/* Event Dropdown */}
+            <div>
+              <label className="block mb-2 text-gray-700 font-medium">
+                Matched Event
+              </label>
+              <select
+                value={selectedEvent ? selectedEvent.name : ""}
+                onChange={handleEventChange}
+                disabled={!selectedVolunteer}
+                className="w-full border-2 rounded-lg border-gray-300 p-3 text-gray-900 bg-white focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                {!selectedVolunteer ? (
+                  <option value="">Select a volunteer first</option>
+                ) : matchedEvents.length > 0 ? (
+                  <>
+                    <option value="">Select an event</option>
+                    {matchedEvents.map((event) => (
+                      <option key={event.name} value={event.name}>
+                        {event.name} - {event.eventDate} ({event.location})
+                      </option>
+                    ))}
+                  </>
+                ) : (
+                  <option value="">No matching events found</option>
+                )}
+              </select>
+            </div>
+
+            {selectedEvent && (
+              <div className="p-4 bg-green-50 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  <strong>Event:</strong> {selectedEvent.name}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Date:</strong> {selectedEvent.eventDate}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Location:</strong> {selectedEvent.location}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Required Skills:</strong>{" "}
+                  {selectedEvent.requiredSkills.join(", ")}
+                </p>
+              </div>
+            )}
           </div>
 
-          {selectedVolunteer && (
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-              <p className="text-sm text-gray-700">
-                <strong>Skills:</strong>{" "}
-                {selectedVolunteer.skills.join(", ")}
-              </p>
-            </div>
-          )}
-
-          {/* Event Dropdown */}
-          <div className="mb-6">
-            <label className="block mb-2 text-gray-700 font-medium">
-              Matched Event
-            </label>
-            <select
-              value={selectedEvent ? selectedEvent.name : ""}
-              onChange={handleEventChange}
-              disabled={!selectedVolunteer}
-              className="w-full border-2 rounded-lg border-gray-300 p-3 text-gray-900 bg-white focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
-            >
-              {!selectedVolunteer ? (
-                <option value="">Select a volunteer first</option>
-              ) : matchedEvents.length > 0 ? (
-                <>
-                  <option value="">Select an event</option>
-                  {matchedEvents.map((event) => (
-                    <option key={event.name} value={event.name}>
-                      {event.name} - {event.eventDate} ({event.location})
-                    </option>
-                  ))}
-                </>
-              ) : (
-                <option value="">No matching events found</option>
-              )}
-            </select>
-          </div>
-
-          {selectedEvent && (
-            <div className="mb-6 p-3 bg-green-50 rounded-lg">
-              <p className="text-sm text-gray-700">
-                <strong>Event:</strong> {selectedEvent.name}
-              </p>
-              <p className="text-sm text-gray-700">
-                <strong>Date:</strong> {selectedEvent.eventDate}
-              </p>
-              <p className="text-sm text-gray-700">
-                <strong>Location:</strong> {selectedEvent.location}
-              </p>
-              <p className="text-sm text-gray-700">
-                <strong>Required Skills:</strong>{" "}
-                {selectedEvent.requiredSkills.join(", ")}
-              </p>
-            </div>
-          )}
-
-          <div className="flex justify-between gap-4">
+          {/* Buttons - Fixed at bottom */}
+          <div className="flex-shrink-0 flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
             <button
               type="submit"
+              onClick={handleSubmit}
               disabled={!selectedVolunteer || !selectedEvent}
-              className="bg-blue-600 text-white py-3 px-6 rounded-lg flex-1 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-200 font-medium"
+              className="bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-200 font-medium"
             >
               Match Volunteer
             </button>
             <button
               type="button"
               onClick={closeForm}
-              className="bg-gray-500 text-white py-3 px-6 rounded-lg flex-1 hover:bg-gray-600 transition duration-200 font-medium"
+              className="bg-gray-500 text-white py-3 px-6 rounded-lg hover:bg-gray-600 transition duration-200 font-medium"
             >
               Cancel
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
