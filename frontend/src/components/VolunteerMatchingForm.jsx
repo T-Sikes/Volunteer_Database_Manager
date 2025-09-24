@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import NotificationSystem from "./NotificationSystem.jsx";
+import { notifySuccess, notifyError } from "../components/NotificationService";
 
 export default function VolunteerMatchingForm({
   closeForm,
   submitMatch,
   volunteers: parentVolunteers = [],
-  events: parentEvents = [],
+  events: parentEvents = []
 }) {
   // Hardcoded demo volunteers
   const hardcodedVolunteers = [
@@ -113,7 +113,10 @@ export default function VolunteerMatchingForm({
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!selectedVolunteer || !selectedEvent) return;
+    if (!selectedVolunteer || !selectedEvent) {
+      notifyError("Please select both a volunteer and an event before submitting.");
+      return;
+    }
 
     const match = {
       volunteerName: selectedVolunteer.name,
@@ -124,12 +127,9 @@ export default function VolunteerMatchingForm({
     };
 
     submitMatch(match);
-    
-    NotificationSystem.notifySuccess(
-      `✅ ${match.volunteerName} matched to ${match.eventName}`
-    );
 
-    closeForm();
+    notifySuccess(`Matched ${selectedVolunteer.name} to ${selectedEvent.name}`);
+
   };
 
   return (

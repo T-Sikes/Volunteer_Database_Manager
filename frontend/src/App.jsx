@@ -1,29 +1,26 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import EventManagement from "./pages/EventManagement.jsx"
-import UserProfile from "./pages/UserProfile.jsx"
-import VolunteerHistory from "./pages/VolunteerHistory.jsx"
-import VolunteerMatchingForm from "./components/VolunteerMatchingForm.jsx"
-import NotificationPage from "./pages/Notification.jsx"
-import VolunteerMatching from "./pages/VolunteerMatching";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import EventManagement from "./pages/EventManagement.jsx";
+import UserProfile from "./pages/UserProfile.jsx";
+import VolunteerHistory from "./pages/VolunteerHistory.jsx";
+import VolunteerMatching from "./pages/VolunteerMatching.jsx";
+import NotificationPage from "./pages/Notification.jsx";
+import NotificationSystem from "./components/NotificationSystem.jsx";
 
 function App() {
   return (
-    <div className='App'>
+    <div className="App">
       <Router>
-        {/* Everything within the <Routes> tags are the pages of our website. The path attribute for the <Route> tag specifies 
-        the path, which goes after the domain name. The element attribute is the main component of that page which is stored in the "pages"
-        directory of the project */}
+        <NotificationSystem />
         <Routes>
-                <Route path='/event-management' element={<EventManagement/>} />
-                <Route path='/profile' element={<UserProfile/>} />
-                <Route path='/volunteer-history' element={<VolunteerHistory/>} />
-                <Route path='/volunteer-matching' element={<VolunteerMatchingForm/>} />
-                <Route path="/notifications" element={<NotificationPage />} />
-                <Route path="/volunteer-matching" element={<VolunteerMatching />} />
+          <Route path="/event-management" element={<EventManagement />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/volunteer-history" element={<VolunteerHistory />} />
+          <Route path="/volunteer-matching" element={<VolunteerMatching />} />
+          <Route path="/notifications" element={<NotificationPage />} />
         </Routes>
       </Router>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
