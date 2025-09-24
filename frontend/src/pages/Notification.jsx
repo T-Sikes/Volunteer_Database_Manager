@@ -45,12 +45,11 @@ const showNotification = (message, type) => {
   
   container.appendChild(notification);
   
-  // Animate in
   setTimeout(() => {
     notification.style.transform = "translateX(0)";
   }, 10);
   
-  // Remove after 3 seconds
+  // Notification Timer
   setTimeout(() => {
     notification.style.transform = "translateX(100%)";
     setTimeout(() => {
