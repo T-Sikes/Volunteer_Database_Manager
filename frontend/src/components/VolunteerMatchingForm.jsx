@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
-
-// Mock notification functions since we don't have the actual service
-const notifySuccess = (message) => console.log("Success:", message);
-const notifyError = (message) => console.log("Error:", message);
+import { notifySuccess, notifyInfo, notifyError } from "../components/NotificationService.jsx";
 
 export default function VolunteerMatchingForm({
   closeForm = () => {},
@@ -10,7 +7,6 @@ export default function VolunteerMatchingForm({
   volunteers: parentVolunteers = [],
   events: parentEvents = [],
 }) {
-  // Hardcoded demo volunteers
   const hardcodedVolunteers = [
     { name: "John Doe", skills: ["First Aid", "Bilingual/Multilingual"] },
     { name: "Eladio Carrion", skills: ["Singer", "Bilingual/Multilingual"] },
@@ -18,7 +14,6 @@ export default function VolunteerMatchingForm({
     { name: "Alice Martin", skills: ["Teaching", "Mentoring"] },
   ];
 
-  // Hardcoded demo events
   const hardcodedEvents = [
     {
       name: "Community Cleanup",
@@ -46,12 +41,8 @@ export default function VolunteerMatchingForm({
     },
   ];
 
-  const [volunteers, setVolunteers] = useState([
-    ...hardcodedVolunteers,
-    ...parentVolunteers,
-  ]);
+  const [volunteers, setVolunteers] = useState([...hardcodedVolunteers, ...parentVolunteers]);
   const [events, setEvents] = useState([...hardcodedEvents, ...parentEvents]);
-
   const [selectedVolunteer, setSelectedVolunteer] = useState(null);
   const [matchedEvents, setMatchedEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -61,10 +52,7 @@ export default function VolunteerMatchingForm({
       try {
         const dbVolunteers = [
           { name: "Michael Jordan", skills: ["Public Speaking", "Mentoring"] },
-          {
-            name: "Maria Gonzalez",
-            skills: ["Bilingual/Multilingual", "Teaching"],
-          },
+          { name: "Maria Gonzalez", skills: ["Bilingual/Multilingual", "Teaching"] },
         ];
         const dbEvents = [
           {
@@ -81,11 +69,7 @@ export default function VolunteerMatchingForm({
           },
         ];
 
-        setVolunteers([
-          ...hardcodedVolunteers,
-          ...parentVolunteers,
-          ...dbVolunteers,
-        ]);
+        setVolunteers([...hardcodedVolunteers, ...parentVolunteers, ...dbVolunteers]);
         setEvents([...hardcodedEvents, ...parentEvents, ...dbEvents]);
       } catch (err) {
         console.error("Failed to fetch volunteers/events:", err);
@@ -122,7 +106,7 @@ export default function VolunteerMatchingForm({
     e.preventDefault();
 
     if (!selectedVolunteer || !selectedEvent) {
-      notifyError("Please select both a volunteer and an event before submitting.");
+      notifyError(!selectedVolunteer ? "Please select a volunteer." : "Please select an event.");
       return;
     }
 
@@ -136,30 +120,32 @@ export default function VolunteerMatchingForm({
 
     submitMatch(match);
     notifySuccess(`Matched ${selectedVolunteer.name} to ${selectedEvent.name}`);
+    closeForm();
+  };
+
+  const handleCancel = () => {
+    notifyInfo("Event update canceled.");
+    closeForm();
   };
 
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-50 overflow-hidden">
       {/* Page Header */}
-      <div className="flex-shrink-0 p-8 text-center">
-        <h1 className="text-4xl font-bold text-gray-800">
-          Volunteer Matching
-        </h1>
+      <div className="flex-shrink-0 p-8 text-center bg-[#3fa2a5]">
+        <h1 className="text-4xl font-bold text-white">Volunteer Matching</h1>
       </div>
 
       <div className="flex-1 p-8">
-        <div className="bg-white rounded-lg shadow-lg p-10 h-full flex flex-col">
+        <div className="bg-white border border-[#a5d9da] rounded-lg shadow-lg p-10 h-full flex flex-col">
           {/* Form Content */}
           <div className="flex-1 space-y-6">
             {/* Volunteer Dropdown */}
             <div>
-              <label className="block mb-2 text-gray-700 font-medium">
-                Volunteer Name
-              </label>
+              <label className="block mb-2 text-black font-medium">Volunteer Name</label>
               <select
                 value={selectedVolunteer ? selectedVolunteer.name : ""}
                 onChange={handleVolunteerChange}
-                className="w-full border-2 rounded-lg border-gray-300 p-3 text-gray-900 bg-white focus:border-blue-500 focus:outline-none"
+                className="w-full border-2 rounded-lg border-[#a5d9da] p-3 text-black bg-white focus:border-[#3fa2a5] focus:outline-none"
               >
                 <option value="">Select a volunteer</option>
                 {volunteers.map((volunteer) => (
@@ -168,11 +154,14 @@ export default function VolunteerMatchingForm({
                   </option>
                 ))}
               </select>
+              {!selectedVolunteer && (
+                <p className="text-red-500 text-sm mt-1">Please select a volunteer.</p>
+              )}
             </div>
 
             {selectedVolunteer && (
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-gray-700">
+              <div className="p-4 bg-[#a5d9da] rounded-lg">
+                <p className="text-sm text-black">
                   <strong>Skills:</strong> {selectedVolunteer.skills.join(", ")}
                 </p>
               </div>
@@ -180,14 +169,12 @@ export default function VolunteerMatchingForm({
 
             {/* Event Dropdown */}
             <div>
-              <label className="block mb-2 text-gray-700 font-medium">
-                Matched Event
-              </label>
+              <label className="block mb-2 text-black font-medium">Matched Event</label>
               <select
                 value={selectedEvent ? selectedEvent.name : ""}
                 onChange={handleEventChange}
                 disabled={!selectedVolunteer}
-                className="w-full border-2 rounded-lg border-gray-300 p-3 text-gray-900 bg-white focus:border-blue-500 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="w-full border-2 rounded-lg border-[#a5d9da] p-3 text-black bg-white focus:border-[#3fa2a5] focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
               >
                 {!selectedVolunteer ? (
                   <option value="">Select a volunteer first</option>
@@ -204,40 +191,45 @@ export default function VolunteerMatchingForm({
                   <option value="">No matching events found</option>
                 )}
               </select>
+              {selectedVolunteer && !selectedEvent && matchedEvents.length > 0 && (
+                <p className="text-red-500 text-sm mt-1">Please select an event.</p>
+              )}
             </div>
 
             {selectedEvent && (
-              <div className="p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-gray-700">
+              <div className="p-4 bg-[#a5d9da] rounded-lg">
+                <p className="text-sm text-black">
                   <strong>Event:</strong> {selectedEvent.name}
                 </p>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-black">
                   <strong>Date:</strong> {selectedEvent.eventDate}
                 </p>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-black">
                   <strong>Location:</strong> {selectedEvent.location}
                 </p>
-                <p className="text-sm text-gray-700">
-                  <strong>Required Skills:</strong>{" "}
-                  {selectedEvent.requiredSkills.join(", ")}
+                <p className="text-sm text-black">
+                  <strong>Required Skills:</strong> {selectedEvent.requiredSkills.join(", ")}
                 </p>
               </div>
             )}
           </div>
 
-          {/* Buttons - Fixed at bottom */}
-          <div className="flex-shrink-0 flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+          {/* Buttons */}
+          <div className="flex-shrink-0 flex justify-end gap-4 mt-8 pt-6 border-t border-[#a5d9da]">
             <button
-              type="submit"
+              type="button"
               onClick={handleSubmit}
-              disabled={!selectedVolunteer || !selectedEvent}
-              className="bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition duration-200 font-medium"
+              className={`py-3 px-6 rounded-lg font-medium transition duration-200
+                ${selectedVolunteer && selectedEvent
+                  ? "bg-[#3fa2a5] text-white hover:bg-[#348a8d]"
+                  : "bg-gray-400 text-gray-200 cursor-not-allowed"
+                }`}
             >
               Match Volunteer
             </button>
             <button
               type="button"
-              onClick={closeForm}
+              onClick={handleCancel}
               className="bg-gray-500 text-white py-3 px-6 rounded-lg hover:bg-gray-600 transition duration-200 font-medium"
             >
               Cancel

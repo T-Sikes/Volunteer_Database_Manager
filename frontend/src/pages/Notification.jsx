@@ -26,16 +26,15 @@ const notifyWarning = (message) => {
   showNotification(message, "warning");
 };
 
-// Simple notification display function
 const showNotification = (message, type) => {
   const container = document.getElementById("notification-container");
   if (!container) return;
 
   const notification = document.createElement("div");
   const colors = {
-    success: "bg-green-500",
+    success: "bg-[#3fa2a5]",
     error: "bg-red-500",
-    info: "bg-blue-500",
+    info: "bg-[#4dff00]",
     warning: "bg-yellow-500"
   };
 
@@ -76,28 +75,28 @@ function NotificationPage() {
         <div className="flex flex-col space-y-6 w-full max-w-md">
           <button
             onClick={() => notifySuccess("Matched Volunteer to Event (Simulated)!")}
-            className="bg-black text-white px-6 py-4 rounded-lg hover:bg-gray-800 transition duration-200 text-lg font-medium"
+            className="bg-[#3fa2a5] text-white px-6 py-4 rounded-lg hover:bg-[#348a8d] transition duration-200 text-lg font-medium"
           >
             Match Volunteer (Simulated)
           </button>
 
           <button
             onClick={() => notifyInfo("Event updated successfully (Simulated).")}
-            className="bg-black text-white px-6 py-4 rounded-lg hover:bg-gray-800 transition duration-200 text-lg font-medium"
+            className="bg-[#4dff00] text-white px-6 py-4 rounded-lg hover:bg-[#348a8d] transition duration-200 text-lg font-medium"
           >
             Update Event (Simulated)
           </button>
 
           <button
             onClick={() => notifyWarning("Reminder: Event starts tomorrow (Simulated).")}
-            className="bg-black text-white px-6 py-4 rounded-lg hover:bg-gray-800 transition duration-200 text-lg font-medium"
+            className="bg-[#3fa2a5] text-white px-6 py-4 rounded-lg hover:bg-[#348a8d] transition duration-200 text-lg font-medium"
           >
             Reminder (Simulated)
           </button>
 
           <button
             onClick={() => notifyError("Error while creating event (Simulated).")}
-            className="bg-black text-white px-6 py-4 rounded-lg hover:bg-gray-800 transition duration-200 text-lg font-medium"
+            className="bg-[#3fa2a5] text-white px-6 py-4 rounded-lg hover:bg-[#348a8d] transition duration-200 text-lg font-medium"
           >
             Trigger Error (Simulated)
           </button>
@@ -106,14 +105,13 @@ function NotificationPage() {
 
       {/* Footer Description */}
       <div className="flex-shrink-0 px-8 pb-16">
-        <p className="text-gray-600 text-center max-w-2xl mx-auto text-lg leading-relaxed">
+        <p className="text-black text-center max-w-2xl mx-auto text-lg leading-relaxed">
           This page demonstrates real-time notifications for new event assignments, updates,
           and reminders. In production, these functions would be triggered by real system
           actions (e.g., volunteer matching, event updates).
         </p>
       </div>
 
-      {/* Toast container */}
       <NotificationSystem />
     </div>
   );
