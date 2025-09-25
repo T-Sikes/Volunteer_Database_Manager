@@ -82,7 +82,7 @@ const allStates = [
 
 
   return (
-  <div className='flex justify-center items-start min-h-screen w-screen bg-gray-50 py-10'>
+  <div className='flex justify-center items-start min-h-screen bg-gray-100 w-screen py-10' >
     <form className="bg-white p-6 rounded-lg shadow-md w-96 flex flex-col space-y-4">
         <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">User Profile</h1>
 
@@ -95,7 +95,7 @@ const allStates = [
               value={fullName}
               onChange={e => setFullName(e.target.value)}
               maxLength={50}
-              className="border-2 rounded-lg border-gray-500 p-2 text-gray-900 bg-white"
+              className="border-2 rounded-xl border-gray-500 p-2 text-gray-900 bg-white"
           />
         </div>
 
@@ -107,7 +107,7 @@ const allStates = [
               value={address1}
               onChange={e => setAddress1(e.target.value)}
               maxLength={100}
-              className="border-2 rounded-lg border-gray-500 p-2 text-gray-900 bg-white"
+              className="border-2 rounded-xl border-gray-500 p-2 text-gray-900 bg-white"
           />
         </div>
 
@@ -120,7 +120,7 @@ const allStates = [
             value={address2}
             onChange={e => setAddress2(e.target.value)}
             maxLength={100}
-            className="border-2 rounded-lg border-gray-500 p-2 text-gray-900 bg-white"
+            className="border-2 rounded-xl border-gray-500 p-2 text-gray-900 bg-white"
           />
         </div>
 
@@ -133,7 +133,7 @@ const allStates = [
             value={city}
             onChange={e => setCity(e.target.value)}
             maxLength={100}
-            className="border-2 rounded-lg border-gray-500 p-2 text-gray-900 bg-white"
+            className="border-2 rounded-xl border-gray-500 p-2 text-gray-900 bg-white"
           />
         </div>
 
@@ -143,7 +143,7 @@ const allStates = [
           <select 
             value={state}
             onChange={e => setState(e.target.value)}
-            className="border-2 rounded-lg border-gray-500 p-2 text-gray-900 bg-white"
+            className="border-2 rounded-xl border-gray-500 p-2 text-gray-900 bg-white"
           >
             <option value="">Select a state</option>
             {allStates.map(s => (
@@ -160,7 +160,7 @@ const allStates = [
             value={zip}
             onChange={e => setZip(e.target.value)}
             maxLength={9}
-            className="border-2 rounded-lg border-gray-500 p-2 text-gray-900 bg-white"
+            className="border-2 rounded-xl border-gray-500 p-2 text-gray-900 bg-white"
           />
         </div>
 
@@ -170,7 +170,7 @@ const allStates = [
 
         {/* Dropdown toggle */}
         <div 
-            className="border-2 rounded-lg border-gray-500 p-2 bg-white cursor-pointer text-black"
+            className="border-2 rounded-xl border-gray-500 p-2 bg-white cursor-pointer text-black"
             onClick={() => setSkillsDropdownOpen(!skillsDropdownOpen)}
         >
             {skills.length > 0 ? skills.join(', ') : 'Select skills'}
@@ -178,7 +178,7 @@ const allStates = [
 
         {/* Dropdown options */}
         {skillsDropdownOpen && (
-            <div className="border-2 border-gray-500 bg-white rounded-lg mt-1 max-h-40 overflow-y-auto p-2 z-10 relative">
+            <div className="border-2 border-gray-500 bg-white rounded-xl mt-1 max-h-40 overflow-y-auto p-2 z-10 relative">
             {allSkills.map(skill => (
                 <label key={skill} className="flex items-center space-x-2 mb-1">
                 <input
@@ -206,7 +206,7 @@ const allStates = [
             value={preferences}
             onChange={e => setPreferences(e.target.value)}
             maxLength={500}
-            className="border-2 rounded-lg border-gray-500 p-2 text-gray-900 bg-white"
+            className="border-2 rounded-xl border-gray-500 p-2 text-gray-900 bg-white"
           />
         </div>
 
@@ -218,7 +218,7 @@ const allStates = [
             type="date"
             value={selectedDate}
             onChange={e => setSelectedDate(e.target.value)}
-            className="border-2 rounded-lg border-gray-500 p-2 text-gray-900 bg-white"
+            className="border-2 rounded-xl border-gray-500 p-2 text-gray-900 bg-white"
             />
             <button
             type="button"
@@ -228,7 +228,10 @@ const allStates = [
                 setSelectedDate('');
                 }
             }}
-            className="bg-blue-500 text-white px-3 rounded"
+            style={{ backgroundColor: '#3fa2a5', color: 'white' }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'black' }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#3fa2a5' }}
+            className="bg-[#3fa2a5] text-white px-3 rounded hover:bg-black transition-colors duration-200"
             >
             Add
             </button>
@@ -242,8 +245,25 @@ const allStates = [
 
 
         <div className="flex justify-between mt-4">
-          <button onClick={handleSubmit} className="bg-blue-500 text-white px-4 py-2 rounded w-1/2 mr-2">Save</button>
-          <button onClick={handleCancel} className="bg-gray-300 px-4 py-2 rounded w-1/2 ml-2">Cancel</button>
+
+          <button onClick={handleSubmit} 
+            style={{ backgroundColor: '#3fa2a5', color: 'white' }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'black' }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#3fa2a5' }}
+            className="text-white px-4 py-2 rounded w-1/2 mr-2">
+              Save
+          </button>
+
+          <button
+            onClick={handleCancel}
+            style={{ backgroundColor: '#3fa2a5', color: 'white' }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'black' }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#3fa2a5' }}
+            className="px-4 py-2 rounded w-1/2 ml-2"
+          >
+            Cancel
+          </button>
+
         </div>
     </form>
   </div>

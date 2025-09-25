@@ -21,7 +21,7 @@ function UserProfile() {
       <div className="flex justify-center items-center h-screen w-screen">
       <div className="bg-white shadow-lg rounded-lg p-6 w-96">
         <h2 className="text-xl font-bold mb-4 text-gray-800 text-center">Profile Saved!</h2>
-        <div className="bg-gray-100 text-black p-4 rounded text-center">
+        <div className="text-black p-4 rounded text-center">
           <p><strong>Full Name:</strong> {profileData.fullName}</p>
           <p><strong>Address 1:</strong> {profileData.address1}</p>
           {profileData.address2 && <p><strong>Address 2:</strong> {profileData.address2}</p>}
@@ -34,7 +34,10 @@ function UserProfile() {
         </div>
         <button
           onClick={toggleForm}
-          className="bg-blue-500 text-white px-4 py-2 rounded mt-4 block mx-auto"
+          style={{ backgroundColor: '#3fa2a5', color: 'white' }}
+          onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'black' }}
+          onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#3fa2a5' }}
+          className="bg-black text-white px-4 py-2 rounded mt-4 block mx-auto"
         >
           Edit Profile
         </button>
