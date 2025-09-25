@@ -46,7 +46,7 @@ useEffect(() => {
   return (
     <>
       {showForm ? (
-        <div className="flex justify-center items-start min-h-screen w-screen bg-gray-50 py-10">
+        <div className="flex justify-center items-start min-h-screen w-screen bg-gray py-10">
           <VolunteerHistoryForm 
             submitRecord={submitRecord} 
             closeForm={toggleForm} 
@@ -61,27 +61,32 @@ useEffect(() => {
               <table className="min-w-full border border-gray-300">
                 <thead className="bg-gray-200">
                   <tr>
-                    <th className="py-2 px-4 border-b text-black">Event Name</th>
-                    <th className="py-2 px-4 border-b text-black">Description</th>
-                    <th className="py-2 px-4 border-b text-black">Location</th>
-                    <th className="py-2 px-4 border-b text-black">Required Skills</th>
-                    <th className="py-2 px-4 border-b text-black">Urgency</th>
-                    <th className="py-2 px-4 border-b text-black">Event Date</th>
-                    <th className="py-2 px-4 border-b text-black">Hours</th>
-                    <th className="py-2 px-4 border-b text-black">Status</th>
+                    <th className="py-2 px-4 border text-black">Event Name</th>
+                    <th className="py-2 px-4 border text-black">Description</th>
+                    <th className="py-2 px-4 border text-black">Location</th>
+                    <th className="py-2 px-4 border text-black">Required Skills</th>
+                    <th className="py-2 px-4 border text-black">Urgency</th>
+                    <th className="py-2 px-4 border text-black">Event Date</th>
+                    <th className="py-2 px-4 border text-black">Hours</th>
+                    <th className="py-2 px-4 border text-black">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {historyData.map((record, index) => (
                     <tr key={index} className="text-center">
-                      <td className="py-2 px-4 border-b text-black">{record.eventName}</td>
-                      <td className="py-2 px-4 border-b text-black">{record.description}</td>
-                      <td className="py-2 px-4 border-b text-black">{record.location}</td>
-                      <td className="py-2 px-4 border-b text-black">{record.requiredSkills.join(", ")}</td>
-                      <td className="py-2 px-4 border-b text-black">{record.urgency}</td>
-                      <td className="py-2 px-4 border-b text-black">{record.eventDate}</td>
-                      <td className="py-2 px-4 border-b text-black">{record.hours}</td>
-                      <td className="py-2 px-4 border-b text-black">{record.status}</td>
+                      <td className="py-2 px-4 border text-black">{record.eventName}</td>
+                      <td className="py-2 px-4 border text-black">{record.description}</td>
+                      <td className="py-2 px-4 border text-black">{record.location}</td>
+                      <td className="py-2 px-4 border text-black">{record.requiredSkills.join(", ")}</td>
+                      <td className="py-2 px-4 border text-black">{record.urgency}</td>
+                      <td className="py-2 px-4 border text-black">{record.eventDate}</td>
+                      <td className="py-2 px-4 border text-black">{record.hours}</td>
+                      <td  className={`py-2 px-4 border text-black rounded ${
+                        record.status === "Completed" ? "bg-green-500" :
+                        record.status === "Pending" ? "bg-yellow-400" :
+                        record.status === "Cancelled" ? "bg-red-500" :
+                        "bg-gray-300"
+                        }`}>{record.status}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -89,7 +94,10 @@ useEffect(() => {
             </div>
             <button
               onClick={toggleForm}
-              className="bg-blue-500 text-white px-4 py-2 rounded mt-4 block mx-auto"
+              style = {{backgroundColor: '#3fa2a5'}}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'black' }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#3fa2a5' }}
+              className="bg-blue-500 text-white px-4 py-2 rounded-xl mt-4 block mx-auto"
             >
               Add Another Record
             </button>
