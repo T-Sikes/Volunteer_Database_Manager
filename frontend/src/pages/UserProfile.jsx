@@ -1,5 +1,5 @@
 import { useState } from "react";
-import UserProfileForm from "../components/UserProfileForm.jsx";
+import UserProfileForm from "../components/userProfileForm.jsx";
 
 function UserProfile() {
   const [showForm, setShowForm] = useState(true);
