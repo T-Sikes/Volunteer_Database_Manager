@@ -5,7 +5,6 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import { format } from "date-fns"
 
 function EventManagement() {
-  let event
   let blankEvent = {
     name: "",
     description: "",
@@ -25,6 +24,7 @@ function EventManagement() {
 
   // Function for receiving data from EventForm component and updating the eventsArray being given to FullCalendar
   const getEventFormData = eventFormData => {
+    console.log(eventFormData)
     const newEvent = Object.values(clickedEvent).every(x => x === "") ? true : false // Boolean that stores whether the user is adding a new event or updating an existing event
     const arrayIndex = newEvent ? eventsArray.length : clickedEvent.index // Stores array index of event in eventsArray
     const event = {
@@ -79,6 +79,7 @@ function EventManagement() {
             setClickedEvent({...blankEvent}) // Whenever a user clicks on "Add Event" the event data should be empty
             toggleEventForm()
           }}
+          className="!bg-[#3fA2A5] hover:!bg-[#203e3f] text-white"
         >
           Add Event
         </button>

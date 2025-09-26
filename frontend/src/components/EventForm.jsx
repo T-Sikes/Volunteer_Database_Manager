@@ -10,6 +10,8 @@ function EventForm(props) {
 
   const [eventData, setEventData] = useState({...props.openedEvent})  // State variable that stores data from the event form in an object
   const [selectedDate, setSelectedDate] = useState("date" in props.openedEvent ? props.openedEvent.date : new Date())
+  const [selectedSkills, setSelectedSkills] = useState(props.openedEvent.requiredSkills)
+  const [skillsDropdownOpen, setSkillsDropdownOpen] = useState(false);
   
   // Updates event object whenever form data changes
   const handleChange = (e) => {
@@ -25,6 +27,7 @@ function EventForm(props) {
   const handleSave = (e) => {
     e.preventDefault()
     eventData.date = selectedDate
+    eventData.requiredSkills = selectedSkills
     props.submitEventForm(eventData)
     props.closeEventForm()
   }
@@ -72,7 +75,7 @@ function EventForm(props) {
               />
             </div>
 
-            <label>Location</label>
+            <label>Location Name</label>
             <input
               name = "location"  
               type="text"
@@ -126,7 +129,37 @@ function EventForm(props) {
             </div>
 
             <label>Required Skills</label>
-            <select
+            <div 
+              className="border-2 rounded-xl border-gray-500 p-2 bg-white cursor-pointer text-black max-w-[600px]"
+              onClick={() => setSkillsDropdownOpen(!skillsDropdownOpen)}
+            >
+            {selectedSkills.length > 0 ? selectedSkills.join(', ') : ''}
+            </div>
+
+            {/* Dropdown options */}
+            {skillsDropdownOpen && (
+                <div className="border-2 border-gray-500 bg-white rounded-xl mt-1 max-h-40 overflow-y-auto p-2 z-10 relative">
+                {skills.map(skill => (
+                    <label key={skill} className="flex items-center space-x-2 mb-1">
+                    <input
+                        type="checkbox"
+                        checked={selectedSkills.includes(skill)}
+                        onChange={() => {
+                          if (selectedSkills.includes(skill)) 
+                              setSelectedSkills(selectedSkills.filter(s => s !== skill));
+                          else 
+                              setSelectedSkills([...selectedSkills, skill]);
+                        
+                        }}
+                    />
+                    <span className="text-black">{skill}</span>
+                    </label>
+                ))}
+                </div>
+            )}
+
+            {/* Old Implementation */}
+            {/* <select
               name = "requiredSkills"
               value={eventData.requiredSkills}
               onChange={handleChange}
@@ -138,7 +171,7 @@ function EventForm(props) {
                   <option key={skill} value={skill}>{skill}</option>
                 )
               })}
-            </select>
+            </select> */}
 
             <label>Urgency</label>
             <select
@@ -154,8 +187,10 @@ function EventForm(props) {
             </select>
           </div>
 
-          <button onClick={handleSave}>Save</button>
-          <button onClick={handleCancel}>Cancel</button>
+          <div className="flex mt-4">
+            <button onClick={handleSave} className="!bg-[#3fA2A5] text-white hover:!bg-[#203e3f]">Save</button>
+            <button onClick={handleCancel} className="!bg-white text-[#3fA2A5] ml-4 border-2 !border-[#3fA2A5] hover:!bg-gray-300 hover:!text-white">Cancel</button>
+          </div>
         </form>
       </div>
     </div>
