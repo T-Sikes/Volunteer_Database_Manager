@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { notifySuccess, notifyInfo, notifyError } from "../components/NotificationService.jsx";
+import { notifySuccess, notifyInfo, notifyError } from "../components/NotificationSystem.jsx";
 
 export default function VolunteerMatchingForm({
   closeForm = () => {},

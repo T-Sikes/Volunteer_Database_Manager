@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import VolunteerMatchingForm from "../components/VolunteerMatchingForm.jsx";
-import { notifySuccess, notifyInfo } from "../components/NotificationService.jsx";
+import { notifySuccess, notifyInfo } from "../components/NotificationSystem.jsx";
 
 export default function VolunteerMatching() {
   const [matches, setMatches] = useState([]);
