@@ -1,10 +1,18 @@
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export const notifySuccess = (msg) => toast.success(msg);
-export const notifyError = (msg) => toast.error(msg);
-export const notifyInfo = (msg) => toast.info(msg);
-export const notifyWarning = (msg) => toast.warn(msg);
+// Notification functions
+export const notifySuccess = (msg) =>
+  toast.success(msg, { theme: "colored" });
+
+export const notifyError = (msg) =>
+  toast.error(msg, { theme: "colored" });
+
+export const notifyInfo = (msg) =>
+  toast.info(msg, { theme: "colored" });
+
+export const notifyWarning = (msg) =>
+  toast.warn(msg, { theme: "colored" });
 
 // Toast container component
 export default function NotificationSystem() {
