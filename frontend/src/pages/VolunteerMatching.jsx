@@ -17,10 +17,7 @@ export default function VolunteerMatching() {
   };
   
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">
-        Volunteer Matching
-      </h1>
+    <div className="min-h-screen bg-gray-100 p-6 flex flex-col items-center">
 
       {/* Volunteer matching form */}
       <VolunteerMatchingForm submitMatch={handleMatchSubmit} />
