@@ -2,14 +2,13 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-import json
 
 # Create your views here.
 
 @api_view(["GET"])
 def get_events(request):
     # Hardcoded events
-    events = [
+    data = [
         {
             "name": "Soup Kitchen",
             "description": "Giving food to the homeless",
@@ -19,7 +18,7 @@ def get_events(request):
             "state": "TX",
             "zipCode": "77204",
             "requiredSkills": ["Food prep", "Leadership"],
-            "urgency": "Medium",
+            "urgency": "medium",
             "date": "2025-10-16"
         },
         {
@@ -31,9 +30,8 @@ def get_events(request):
             "state": "TX",
             "zipCode": "77203",
             "requiredSkills": ["Able to lift more than 50 lbs"],
-            "urgency": "Low",
+            "urgency": "low",
             "date": "2025-10-15"  
         }
     ]
-    data = json.dumps(events)
-    return Response(data, status=status.HTTP_200_OK)
+    return Response(data)
