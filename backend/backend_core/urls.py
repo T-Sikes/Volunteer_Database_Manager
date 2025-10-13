@@ -1,3 +1,5 @@
+# API endpoints are in the ../api/urls.py file
+
 """
 URL configuration for backend_core project.
 
