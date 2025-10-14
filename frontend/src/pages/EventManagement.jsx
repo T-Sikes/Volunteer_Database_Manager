@@ -30,7 +30,7 @@ function EventManagement() {
   // Fetch events from backend on mount
   const fetchEvents = async() => {
     try{
-      const response = await fetch("http://127.0.0.1:8000/api/events/")
+      const response = await fetch("http://127.0.0.1:8000/event/")
       const data = await response.json()
       parseEvents(data)
     } catch (err) {
