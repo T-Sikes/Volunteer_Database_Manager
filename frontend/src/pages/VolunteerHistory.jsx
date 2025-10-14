@@ -2,44 +2,52 @@ import { useState, useEffect } from "react";
 import VolunteerHistoryForm from "../components/VolunteerHistoryForm.jsx";
 import EventManagement from "./EventManagement.jsx"; //  pull events dynamically
 
-function VolunteerHistory({ events = [] }) {
+function VolunteerHistory() {
   const [showForm, setShowForm] = useState(false);
   const [historyData, setHistoryData] = useState([]);
+  const [events, setEvents] = useState([]); // For the form dropdown
+  const API_BASE = "http://127.0.0.1:8000/user";
 
 
-//hardcoded example for now
-//will properly pull from eventManagement.jsx when backend is implemented using API FETCH calls
-useEffect(() => {
-    const sampleData = [
-      {
-        eventName: "Community Cleanup",
-        eventDate: "2025-09-25",
-        location: "Central Park",
-        description: "Cleaning up litter and debris.",
-        requiredSkills: ["Leadership", "Bilingual/Multilingual"],
-        urgency: "Medium",
-        hours: 4,
-        status: "Completed",
-      },
-      {
-        eventName: "Food Drive",
-        eventDate: "2025-10-01",
-        location: "Downtown Shelter",
-        description: "Distribute food packages to families in need.",
-        requiredSkills: ["Food prep", "Retail experience"],
-        urgency: "High",
-        hours: 3,
-        status: "Pending",
-      },
-    ];
-    setHistoryData(sampleData);
+
+// Pull existing volunteer history from backend
+  useEffect(() => {
+    fetch(`${API_BASE}/history/`)
+      .then(res => res.json())
+      .then(data => setHistoryData(data))
+      .catch(err => console.error("Failed to fetch history:", err));
+  }, []);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/events/`) // 
+      .then(res => res.json())
+      .then(data => setEvents(data))
+      .catch(err => {
+        console.warn("Events fetch failed, using sample events");
+        setEvents([
+          { name: "Community Cleanup", description: "Cleaning up litter", location: "Central Park", requiredSkills: ["Leadership"], urgency: "Medium", eventDate: "2025-09-25" },
+          { name: "Food Drive", description: "Distribute food packages", location: "Downtown Shelter", requiredSkills: ["Food prep"], urgency: "High", eventDate: "2025-10-01" },
+          { name: "Test Event", description: "Temporary test event", location: "Test Location", requiredSkills: ["Testing"], urgency: "Low", eventDate: "2025-10-20" },
+        ]);
+      });
   }, []);
 
 
   const submitRecord = (record) => {
-    setHistoryData([...historyData, record]);
-    setShowForm(false);
+    fetch(`${API_BASE}/history/save/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(record),
+    })
+      .then(res => res.json())
+      .then(data => {
+        // Append saved record to the frontend state
+        setHistoryData([...historyData, data.data]);
+        setShowForm(false);
+      })
+      .catch(err => console.error("Failed to save record:", err));
   };
+
 
   const toggleForm = () => setShowForm(!showForm);
 
