@@ -20,7 +20,7 @@ function UserProfile() {
 
   const submitProfile = (data) => {
     // POST to backend save endpoint
-    fetch(`${API_BASE}/profile/save`, {
+    fetch(`${API_BASE}/profile/save/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
