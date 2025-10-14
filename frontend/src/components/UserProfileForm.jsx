@@ -1,20 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-function UserProfileForm(props) {
-  const [fullName, setFullName] = useState('');
-  const [address1, setAddress1] = useState('');
-  const [address2, setAddress2] = useState('');
-  const [city, setCity] = useState('');
-  const [state ,setState] = useState('');
-  const [zip, setZip] = useState('');
-  const [skills, setSkills] = useState('');
-  const [preferences, setPreferences] = useState('');
-  const [availability, setAvailability] = useState([]);
+function UserProfileForm({ submitProfile, closeForm, initialData }) {
+  const [fullName, setFullName] = useState(initialData?.full_name || '');
+  const [address1, setAddress1] = useState(initialData?.address1 || '');
+  const [address2, setAddress2] = useState(initialData?.address2 || '');
+  const [city, setCity] = useState(initialData?.city || '');
+  const [state ,setState] = useState(initialData?.state || '');
+  const [zip, setZip] = useState(initialData?.zip_code || '');
+  const [skills, setSkills] = useState(initialData?.skills || []);
+  const [preferences, setPreferences] = useState(initialData?.preferences || '');
+  const [availability, setAvailability] = useState(initialData?.availability || []);
   const [skillsDropdownOpen, setSkillsDropdownOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
 
-
-
+useEffect(() => {
+    if (initialData) {
+      setFullName(initialData.full_name || '');
+      setAddress1(initialData.address1 || '');
+      setAddress2(initialData.address2 || '');
+      setCity(initialData.city || '');
+      setState(initialData.state || '');
+      setZip(initialData.zip_code || '');
+      setSkills(initialData.skills || []);
+      setPreferences(initialData.preferences || '');
+      setAvailability(initialData.availability || []);
+    }
+  }, [initialData]);
 
 const allSkills = ["JavaScript", "Python", "C++", "Customer Service", "Microsoft Office", "Leadership", "SQL"];
 const allStates = [
@@ -60,7 +71,7 @@ const allStates = [
 
 
     // send data to parent
-    props.submitProfile({ fullName, address1, address2, city, state, zip, skills, preferences, availability});
+    submitProfile({ full_name: fullName, address1, address2, city, state, zip_code: zip, skills, preferences, availability});
   }
 
   const handleCancel = (e) => {

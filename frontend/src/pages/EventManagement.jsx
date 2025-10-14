@@ -1,10 +1,11 @@
 import EventForm from "../components/EventForm.jsx"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import { format } from "date-fns"
 
 function EventManagement() {
+  
   let blankEvent = {
     name: "",
     description: "",
@@ -20,11 +21,41 @@ function EventManagement() {
   const [eventsArray, setEventsArray] = useState([])
   const [clickedEvent, setClickedEvent] = useState({})
 
+  useEffect(() => {
+    fetchEvents()
+  }, [])
+
   const toggleEventForm = () => setShowEventForm(!showEventForm)
+
+  // Fetch events from backend on mount
+  const fetchEvents = async() => {
+    try{
+      const response = await fetch("http://127.0.0.1:8000/event/")
+      const data = await response.json()
+      parseEvents(data)
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  // Process fetched events so they can be read by FullCalendar
+  const parseEvents = (events) => {
+    const parsedEvents = []
+    for(let i = 0; i < events.length; i++) {
+      parsedEvents.push({
+        title: events[i].name,
+        start: format(events[i].date, "yyyy-MM-dd"),
+        end: format(events[i].date, "yyyy-MM-dd"),
+        extendedProps: {...events[i], index: i} 
+      })
+      setEventsArray(parsedEvents)
+    }
+  }
+
 
   // Function for receiving data from EventForm component and updating the eventsArray being given to FullCalendar
   const getEventFormData = eventFormData => {
-    console.log(eventFormData)
+    console.log(clickedEvent)
     const newEvent = Object.values(clickedEvent).every(x => x === "") ? true : false // Boolean that stores whether the user is adding a new event or updating an existing event
     const arrayIndex = newEvent ? eventsArray.length : clickedEvent.index // Stores array index of event in eventsArray
     const event = {
