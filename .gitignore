@@ -34,3 +34,9 @@ __pycache__/
 
 # OS files
 Thumbs.db
+
+# Ignore SQLite database (local only)
+db.sqlite3
+
+# Ignore migration bytecode but keep migration scripts
+*/migrations/__pycache__/
