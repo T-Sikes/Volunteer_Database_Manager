@@ -1,5 +1,3 @@
-# API endpoints are in the ../api/urls.py file
-
 """
 URL configuration for backend_core project.
 
@@ -21,6 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("api/", include("api.urls")),
+    path("event/", include("event.urls")),
     path("user/", include("user.urls"))
 ]
