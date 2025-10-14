@@ -18,3 +18,17 @@ class UserProfileSerializer(serializers.Serializer):
         required=True,
         allow_empty=False
     )
+
+class VolunteerRecordSerializer(serializers.Serializer):
+    eventName = serializers.CharField(required=True)
+    description = serializers.CharField(required=False, allow_blank=True)
+    location = serializers.CharField(required=True)
+    requiredSkills = serializers.ListField(
+        child=serializers.CharField(),
+        required=True,
+        allow_empty=False
+    )
+    urgency = serializers.ChoiceField(choices=["Low", "Medium", "High"], required=True)
+    eventDate = serializers.DateField(required=True)
+    hours = serializers.IntegerField(min_value=0, required=True)
+    status = serializers.ChoiceField(choices=["Completed", "Pending", "Cancelled"], required=True)

@@ -53,3 +53,36 @@ class UserProfileAPITest(TestCase):
         # make sure errors exist for required fields
         for key in ["full_name", "address1", "city", "state", "zip_code", "skills", "availability"]:
             self.assertIn(key, response.data)
+
+
+class VolunteerHistoryAPITest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.record = {
+            "eventName": "Test Event",
+            "description": "Temp event",
+            "location": "Test Location",
+            "requiredSkills": ["Testing"],
+            "urgency": "Low",
+            "eventDate": "2025-10-20",
+            "hours": 2,
+            "status": "Pending"
+        }
+
+    def test_get_history(self):
+        response = self.client.get("/user/history/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response.data, list)
+
+    def test_save_valid_record(self):
+        response = self.client.post("/user/history/save/", self.record, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["status"], "saved")
+        self.assertEqual(response.data["data"]["eventName"], "Test Event")
+
+    def test_save_invalid_record(self):
+        invalid = self.record.copy()
+        invalid["hours"] = -1  # invalid
+        response = self.client.post("/user/history/save/", invalid, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("hours", response.data)
