@@ -3,13 +3,13 @@ function SignUpOrIn(props) {
     return (
     <>
     {props.switchMode === "Register"?
-      <button className={buttonStyle}> Sign up </button>
+      <button className={buttonStyle} onClick={props.onClick}> Sign up </button>
       : 
       <>
       <div className='text-black mb-4'>Forgot Password?
         <span className='text-[#3fA2A5]'> Click here!</span>
       </div> 
-      <button className={buttonStyle}>Sign in</button> 
+      <button className={buttonStyle} onClick={props.onClick}>Sign in</button> 
       </>
     }
     </>
