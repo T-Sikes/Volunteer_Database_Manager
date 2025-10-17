@@ -1,8 +1,16 @@
 from django.urls import path
-from . import views
+from .views import get_user_profile, save_user_profile, get_volunteer_history, save_volunteer_record, get_events
 
+#endpoint definitons
 urlpatterns = [
-    # Example routes — customize later
-    path('', views.user_list, name='user_list'),
-    path('<int:user_id>/', views.user_detail, name='user_detail'),
+    #user profile endpoints
+    path('profile/', get_user_profile),
+    path('profile/save/', save_user_profile),
+
+    #volunteer history endpoints
+    path('history/', get_volunteer_history),
+    path('history/save/', save_volunteer_record),
+
+    #temporary dynamic events endpoint
+     path('events/', get_events),
 ]

@@ -7,6 +7,7 @@ function VolunteerHistoryForm({ submitRecord, closeForm, events = [] }) {
 
   const allStatuses = ["Completed", "Pending", "Cancelled"];
 
+
   const handleSubmit = (e) => {
     e. preventDefault(); 
 
@@ -46,11 +47,11 @@ function VolunteerHistoryForm({ submitRecord, closeForm, events = [] }) {
             const event = events.find(ev => ev.name === e.target.value);
             setSelectedEvent(event || null);
           }}
-          className="border-2 rounded-xl border-gray-500 p-2 text-gray-900 bg-white"
+          className="border-2 rounded-xl border-gray-500 p-2 text-black bg-white"
         >
           <option value="">Select an event</option>
-          {events.map(ev => (
-            <option key={ev.name} value={ev.name}>{ev.name}</option>
+          {events.map((ev, index) => (
+            <option key={index} value={ev.name}>{ev.name}</option>
           ))}
         </select>
       </div>

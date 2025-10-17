@@ -16,7 +16,7 @@ events = [
         "city": "Houston",
         "state": "TX",
         "zipCode": "77204",
-        "requiredSkills": ["Food prep", "Leadership"],
+        "requiredSkills": ["Event Planning", "Leadership", "Bilingual/Multilingual"],
         "urgency": "medium",
         "date": "2025-10-16"
     },
@@ -29,7 +29,7 @@ events = [
         "city": "Houston",
         "state": "TX",
         "zipCode": "77203",
-        "requiredSkills": ["Able to lift more than 50 lbs"],
+        "requiredSkills": ["Event Planning", "First Aid", "Bilingual/Multilingual"],
         "urgency": "low",
         "date": "2025-10-15"
     },
@@ -42,7 +42,7 @@ events = [
         "city": "Houston",
         "state": "TX",
         "zipCode": "77001",
-        "requiredSkills": ["Event Planning", "First Aid"],
+        "requiredSkills": ["Event Planning", "First Aid", "Bilingual/Multilingual"],
         "urgency": "high",
         "date": "2025-11-15"
     },
@@ -55,7 +55,7 @@ events = [
     "city": "Houston",
     "state": "TX",
     "zipCode": "77002",
-    "requiredSkills": ["Singer"],
+    "requiredSkills": ["Singer", "Event Planning", "Public Speaking"],
     "urgency": "medium",
     "date": "2025-12-21"
     },
