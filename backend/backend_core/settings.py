@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'user',
     'user_login',
     'rest_framework',
+    'notifications',
     'rest_framework.authtoken',
     'corsheaders',
 ]

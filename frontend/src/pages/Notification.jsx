@@ -1,109 +1,141 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import NotificationSystem, {
+  notifySuccess,
+  notifyError,
+  notifyInfo,
+  notifyWarning,
+} from "../components/NotificationSystem.jsx";
 
-// Mock notification system components and functions
-const NotificationSystem = () => {
-  return <div className="fixed top-4 right-4 z-50" id="notification-container"></div>;
-};
+const API_BASE = "http://127.0.0.1:8000/api/notifications";
 
-// Mock notification functions
-const notifySuccess = (message) => {
-  console.log("Success:", message);
-  showNotification(message, "success");
-};
+async function sendNotification(data, successMsg) {
+  try {
+    const res = await fetch(`${API_BASE}/send/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
 
-const notifyError = (message) => {
-  console.log("Error:", message);
-  showNotification(message, "error");
-};
+    if (!res.ok) {
+      const errData = await res.json();
+      notifyError(`Server error: ${JSON.stringify(errData)}`);
+      return;
+    }
 
-const notifyInfo = (message) => {
-  console.log("Info:", message);
-  showNotification(message, "info");
-};
-
-const notifyWarning = (message) => {
-  console.log("Warning:", message);
-  showNotification(message, "warning");
-};
-
-const showNotification = (message, type) => {
-  const container = document.getElementById("notification-container");
-  if (!container) return;
-
-  const notification = document.createElement("div");
-  const colors = {
-    success: "bg-[#3fa2a5]",
-    error: "bg-red-500",
-    info: "bg-[#4dff00]",
-    warning: "bg-yellow-500"
-  };
-
-  notification.className = `${colors[type]} text-white px-4 py-2 rounded mb-2 shadow-lg transform transition-all duration-300`;
-  notification.textContent = message;
-  notification.style.transform = "translateX(100%)";
-  
-  container.appendChild(notification);
-  
-  setTimeout(() => {
-    notification.style.transform = "translateX(0)";
-  }, 10);
-  
-  // Notification Timer
-  setTimeout(() => {
-    notification.style.transform = "translateX(100%)";
-    setTimeout(() => {
-      if (container.contains(notification)) {
-        container.removeChild(notification);
-      }
-    }, 300);
-  }, 3000);
-};
+    notifySuccess(successMsg);
+  } catch (err) {
+    notifyError(`Network error: ${err.message}`);
+  }
+}
 
 function NotificationPage() {
+  const [notifications, setNotifications] = useState([]);
+
+  const loadNotifications = async () => {
+    const res = await fetch(`${API_BASE}/`);
+    if (res.ok) {
+      const data = await res.json();
+      setNotifications(data);
+    }
+  };
+
+  useEffect(() => {
+    loadNotifications();
+  }, []);
+
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-100 overflow-hidden">
-      {/* Header */}
       <div className="flex-shrink-0 text-center pt-16 pb-8">
         <h1 className="text-4xl font-bold text-gray-800">
           Volunteer Notification Center
         </h1>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-8">
-        {/* Simulation buttons */}
         <div className="flex flex-col space-y-6 w-full max-w-md">
           <button
-            onClick={() => notifySuccess("Matched Volunteer to Event (Simulated)!")}
+            onClick={() =>
+              sendNotification(
+                {
+                  notificationType: "match",
+                  volunteerName: "John Doe",
+                  eventName: "Soup Kitchen",
+                  message: "Matched Volunteer to Event",
+                },
+                "Matched volunteer successfully!"
+              )
+            }
             className="bg-[#3fa2a5] text-white px-6 py-4 rounded-lg hover:bg-[#348a8d] transition duration-200 text-lg font-medium"
           >
-            Match Volunteer (Simulated)
+            Match Volunteer
           </button>
 
           <button
-            onClick={() => notifyInfo("Event updated successfully (Simulated).")}
+            onClick={() =>
+              sendNotification(
+                {
+                  notificationType: "update",
+                  volunteerName: "Alice Martin",
+                  eventName: "Community Clean-Up",
+                  message: "Event updated successfully",
+                },
+                "Event update notification sent!"
+              )
+            }
             className="bg-[#4dff00] text-white px-6 py-4 rounded-lg hover:bg-[#348a8d] transition duration-200 text-lg font-medium"
           >
-            Update Event (Simulated)
+            Update Event
           </button>
 
           <button
-            onClick={() => notifyWarning("Reminder: Event starts tomorrow (Simulated).")}
+            onClick={() =>
+              sendNotification(
+                {
+                  notificationType: "reminder",
+                  volunteerName: "Jane Smith",
+                  eventName: "Plant Trees",
+                  message: "Reminder: Event starts tomorrow!",
+                },
+                "Reminder sent!"
+              )
+            }
             className="bg-[#3fa2a5] text-white px-6 py-4 rounded-lg hover:bg-[#348a8d] transition duration-200 text-lg font-medium"
           >
-            Reminder (Simulated)
+            Send Reminder
           </button>
 
           <button
-            onClick={() => notifyError("Error while creating event (Simulated).")}
+            onClick={() =>
+              sendNotification(
+                {
+                  notificationType: "match",
+                  volunteerName: "Nonexistent Person",
+                  eventName: "Soup Kitchen",
+                  message: "Test failure case",
+                },
+                "This should fail validation"
+              )
+            }
             className="bg-[#3fa2a5] text-white px-6 py-4 rounded-lg hover:bg-[#348a8d] transition duration-200 text-lg font-medium"
           >
-            Trigger Error (Simulated)
+            Trigger Error
           </button>
+        </div>
+
+        <div className="mt-8 bg-white shadow-lg rounded-lg p-4 w-full max-w-md">
+          <h2 className="text-lg font-semibold mb-2 text-gray-700">
+            Current Notifications
+          </h2>
+          <ul className="space-y-2 max-h-60 overflow-y-auto">
+            {notifications.map((n, i) => (
+              <li key={i} className="border p-2 rounded text-gray-800">
+                <strong>{n.volunteerName}</strong> - {n.message}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
-      {/* Footer Description */}
       <div className="flex-shrink-0 px-8 pb-16">
         <p className="text-black text-center max-w-2xl mx-auto text-lg leading-relaxed">
           This page demonstrates real-time notifications for new event assignments, updates,
