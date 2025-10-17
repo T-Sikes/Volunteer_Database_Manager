@@ -29,7 +29,7 @@ def signup(request):
         user.set_password(request.data['password'])
         user.save()
         token = Token.objects.create(user=user)
-        return Response({"token": token.key, "user": serializer.data})
+        return Response({"token": token.key, "user": serializer.data}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 from rest_framework.decorators import authentication_classes, permission_classes
