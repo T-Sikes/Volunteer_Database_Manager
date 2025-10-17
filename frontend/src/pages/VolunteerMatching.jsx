@@ -84,7 +84,7 @@ export default function VolunteerMatching() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6 flex flex-col items-center justify-center">
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-100 overflow-auto">
       <VolunteerMatchingForm
         submitMatch={handleMatchSubmit}
         volunteers={volunteers}
