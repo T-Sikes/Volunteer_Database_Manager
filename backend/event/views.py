@@ -112,7 +112,7 @@ def update_event(request, pk):
         events[found_index] = data
         events[found_index]["id"] = pk
         print(events)
-        return Response(data)
+        return Response(data, status=status.HTTP_201_CREATED)
     return Response("", status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["GET"])
