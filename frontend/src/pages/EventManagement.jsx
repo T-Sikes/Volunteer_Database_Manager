@@ -38,6 +38,46 @@ function EventManagement() {
     }
   }
 
+  // Add event to database (when the database is implemented)
+  const addEvent = async (event) => {
+    try{
+      const response = await fetch("http://127.0.0.1:8000/event/create/",{
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(event.extendedProps.eventData)
+      })
+      const data = await response.json()
+      console.log(data)
+      setEventsArray(prevState => [...prevState, event])
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  // Update event in database (when the database is implemented)
+  const updateEvent = async (event, pk) => {
+    try{
+      const response = await fetch(`http://127.0.0.1:8000/event/${pk}/`,{
+        method: "PUT",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(event.extendedProps.eventData)
+      })
+      const data = await response.json()
+      console.log(data)
+      setEventsArray(prevState => {
+        const modifiedArray = [...prevState]
+        modifiedArray[event.extendedProps.index] = event
+        return modifiedArray  
+      })
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
   // Process fetched events so they can be read by FullCalendar
   const parseEvents = (events) => {
     const parsedEvents = []
@@ -46,7 +86,10 @@ function EventManagement() {
         title: events[i].name,
         start: format(events[i].date, "yyyy-MM-dd"),
         end: format(events[i].date, "yyyy-MM-dd"),
-        extendedProps: {...events[i], index: i} 
+        extendedProps: {
+          eventData: {...events[i]}, 
+          index: i
+        } 
       })
       setEventsArray(parsedEvents)
     }
@@ -55,9 +98,8 @@ function EventManagement() {
 
   // Function for receiving data from EventForm component and updating the eventsArray being given to FullCalendar
   const getEventFormData = eventFormData => {
-    console.log(clickedEvent)
-    const newEvent = Object.values(clickedEvent).every(x => x === "") ? true : false // Boolean that stores whether the user is adding a new event or updating an existing event
-    const arrayIndex = newEvent ? eventsArray.length : clickedEvent.index // Stores array index of event in eventsArray
+    const newEvent = clickedEvent ? false : true // Boolean that stores whether the user is adding a new event or updating an existing event
+    const arrayIndex = newEvent ? eventsArray.length : clickedEvent.extendedProps.index // Stores array index of event in eventsArray
     const event = {
       // These are properties specifically for FullCalender to read
       title: eventFormData.name,
@@ -65,22 +107,22 @@ function EventManagement() {
       end: format(eventFormData.date, "yyyy-MM-dd"),
       
       // extendedProps stores all of the event form data and its index in the eventsArray to be retrieved later.
-      extendedProps: {...eventFormData, index: arrayIndex} 
+      extendedProps: {
+        eventData: {...eventFormData}, 
+        index: arrayIndex
+      } 
     }
 
-    if (newEvent)
-      setEventsArray(prevState => prevState.concat([event]))
+    if (newEvent){
+      addEvent(event)
+    }
     else
-      setEventsArray(prevState => {
-        const modifiedArray = [...prevState]
-        modifiedArray[arrayIndex] = event
-        return modifiedArray  
-      })
+      updateEvent(event, event.extendedProps.eventData.id)
   }
 
   // Function for showing showing event form when an event is clicked
   const eventClicked = info => {
-    setClickedEvent(info.event.extendedProps)
+    setClickedEvent(info.event)
     toggleEventForm()
   }
 
@@ -100,14 +142,14 @@ function EventManagement() {
         {/* Only show event form if showEventForm is true */}
         {showEventForm && 
           <div className="absolute inset-0 z-10 bg-[rgba(0,0,0,0.5)] h-screen w-screen">
-            <EventForm openedEvent={clickedEvent} submitEventForm={getEventFormData} closeEventForm={toggleEventForm}/>
+            <EventForm openedEvent={clickedEvent ? clickedEvent.extendedProps.eventData : blankEvent} submitEventForm={getEventFormData} closeEventForm={toggleEventForm}/>
           </div>
         }
       </div>
       <div className="flex justify-center h-fit mt-3">
         <button 
           onClick={() => {
-            setClickedEvent({...blankEvent}) // Whenever a user clicks on "Add Event" the event data should be empty
+            setClickedEvent(null) // Whenever a user clicks on "Add Event" there is no clicked event
             toggleEventForm()
           }}
           className="!bg-[#3fA2A5] hover:!bg-[#203e3f] text-white"
