@@ -93,6 +93,28 @@ def _score_event_for_volunteer(event, volunteer):
 def get_events(request):
     return Response(events)
 
+@api_view(["POST"])
+def create_event(request):
+    data = request.data
+    if data:
+        return Response(data, status=status.HTTP_201_CREATED)
+    return Response("", status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["PUT"])
+def update_event(request, pk):
+    data = request.data
+    found_index = -1
+    for index, d in enumerate(events):
+        if d.get('id') == pk:
+            found_index = index
+            break
+    if data and found_index != -1:
+        events[found_index] = data
+        events[found_index]["id"] = pk
+        print(events)
+        return Response(data, status=status.HTTP_201_CREATED)
+    return Response("", status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(["GET"])
 def get_volunteers(request):
     unique = {}
