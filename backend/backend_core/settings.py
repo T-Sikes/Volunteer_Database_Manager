@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'event',
     'user',
     'user_login',
+    'volunteer_db',
     'rest_framework',
     'notifications',
     'rest_framework.authtoken',
@@ -82,8 +83,12 @@ WSGI_APPLICATION = 'backend_core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',  # use MySQL
+        'NAME': 'volunteer_project',           # your database name
+        'USER': 'project_user',                # the MySQL user you created
+        'PASSWORD': 'spacestation22',       # the password you just set
+        'HOST': 'localhost',                   # since MySQL is on your machine
+        'PORT': '3306',                        # default MySQL port
     }
 }
 
@@ -130,3 +135,6 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+AUTH_USER_MODEL = 'volunteer_db.UserCredentials'
+
