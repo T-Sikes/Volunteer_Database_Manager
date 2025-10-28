@@ -23,6 +23,10 @@ def validate_urgency(value):
 def validate_future_date(value):
     if value < timezone.now():
         raise ValidationError("Event date cannot be in the past.")
+    
+def validate_is_list(value):
+    if not isinstance(value, list):
+        raise ValidationError("Required skills must be a list")
 
 
 
@@ -142,7 +146,7 @@ class UserProfile(models.Model):
         default=States.UNKNOWN, 
     )
     zipcode = models.CharField(max_length=10, validators=[validate_zipcode])
-    skills = models.JSONField(default=list)
+    skills = models.JSONField(validators=[validate_is_list], null=True)
     preferences = models.TextField(blank=True)
     availability = models.CharField(max_length=100)
 
@@ -156,8 +160,8 @@ class EventDetails(models.Model):
     event_name = models.CharField(max_length=200)
     description = models.TextField(null=True)
     location = models.CharField(max_length=200, null=True)
-    required_skills = models.JSONField(default=list)
-    urgency = models.CharField(max_length=50, validators=[validate_urgency])
+    required_skills = models.JSONField(validators=[validate_is_list], null=True)
+    urgency = models.CharField(max_length=50, validators=[validate_urgency], null=True)
     address = models.CharField(max_length=200)
     city = models.CharField(max_length=50)
     state = models.CharField(
