@@ -25,6 +25,7 @@ dist-ssr
 
 # Virtual environment
 venv/
+.venv
 
 # Python cache
 __pycache__/
@@ -40,3 +41,6 @@ db.sqlite3
 
 # Ignore migration bytecode but keep migration scripts
 */migrations/__pycache__/
+
+# Environment variables
+.env

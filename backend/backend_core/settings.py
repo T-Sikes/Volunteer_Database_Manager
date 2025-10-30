@@ -11,19 +11,24 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import environ
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env(DEBUG=(bool, True))
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-o77ngvl^rqi4ymlox=ax%y_q)^gul=wg6139w=!1e9hd)a)cfp'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = []
 
@@ -40,6 +45,7 @@ INSTALLED_APPS = [
     'event',
     'user',
     'user_login',
+    'volunteer_db',
     'rest_framework',
     'notifications',
     'rest_framework.authtoken',
@@ -82,8 +88,12 @@ WSGI_APPLICATION = 'backend_core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',  # use MySQL
+        'NAME': env('DB_NAME'),           # your database name
+        'USER': env('DB_USER'),                # the MySQL user you created
+        'PASSWORD': env('DB_PASS'),       # the password you just set
+        'HOST': 'localhost',                   # since MySQL is on your machine
+        'PORT': '3306',                        # default MySQL port
     }
 }
 
@@ -130,3 +140,6 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+AUTH_USER_MODEL = 'volunteer_db.UserCredentials'
+
