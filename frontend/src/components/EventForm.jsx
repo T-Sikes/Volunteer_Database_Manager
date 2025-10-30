@@ -1,6 +1,7 @@
 import { useState } from "react" 
 import Datepicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
+import { format } from "date-fns"
 
 function EventForm(props) {
   // Hardcoded required skills for now
@@ -9,8 +10,9 @@ function EventForm(props) {
 
 
   const [eventData, setEventData] = useState({...props.openedEvent})  // State variable that stores data from the event form in an object
-  const [selectedDate, setSelectedDate] = useState("date" in props.openedEvent ? props.openedEvent.date : new Date())
-  const [selectedSkills, setSelectedSkills] = useState(props.openedEvent.requiredSkills)
+  const [selectedStartDate, setSelectedStartDate] = useState("start_date" in props.openedEvent ? props.openedEvent.start_date : new Date())
+  const [selectedEndDate, setSelectedEndDate] = useState("end_date" in props.openedEvent ? props.openedEvent.end_date : new Date())
+  const [selectedSkills, setSelectedSkills] = useState(props.openedEvent.required_skills)
   const [skillsDropdownOpen, setSkillsDropdownOpen] = useState(false);
   
   // Updates event object whenever form data changes
@@ -26,7 +28,8 @@ function EventForm(props) {
   // Pass event form data to parent component and close form when user clicks save
   const handleSave = (e) => {
     e.preventDefault()
-    eventData.date = selectedDate
+    eventData.start_date = format(selectedStartDate, "yyyy-MM-dd HH:mm:ss")
+    eventData.end_date = format(selectedEndDate, "yyyy-MM-dd HH:mm:ss")
     eventData.required_skills = selectedSkills
     props.submitEventForm(eventData)
     props.closeEventForm()
@@ -63,16 +66,34 @@ function EventForm(props) {
             >
             </textarea>
             
-            <label>Date</label>
-            <div className="border-2 rounded-lg border-gray-500">
-              <Datepicker 
-                selected={selectedDate} 
-                onChange={date => setSelectedDate(date)}
-                showMonthDropdown
-                showYearDropdown
-                scrollableYearDropdown
-                scrollableMonthYearDropdown
-              />
+            <div className="mt-4 flex">
+              <label>Start</label>
+              <div className="border-2 rounded-lg border-gray-500 w-1/3">
+                <Datepicker 
+                  selected={selectedStartDate} 
+                  onChange={date => setSelectedStartDate(date)}
+                  showMonthDropdown
+                  showYearDropdown
+                  scrollableYearDropdown
+                  scrollableMonthYearDropdown
+                  showTimeSelect
+                  dateFormat="Pp"
+                />
+              </div>
+
+              <label>End</label>
+              <div className="border-2 rounded-lg border-gray-500 w-1/3">
+                <Datepicker 
+                  selected={selectedEndDate} 
+                  onChange={date => setSelectedEndDate(date)}
+                  showMonthDropdown
+                  showYearDropdown
+                  scrollableYearDropdown
+                  scrollableMonthYearDropdown
+                  showTimeSelect
+                  dateFormat="Pp"
+                />
+              </div>
             </div>
 
             <label>Location Name</label>
@@ -120,7 +141,7 @@ function EventForm(props) {
 
               <label>ZIP Code</label>
               <input
-                name = "zipCode"
+                name = "zip_code"
                 type="number"
                 value={eventData.zip_code}
                 onChange={handleChange}

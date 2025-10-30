@@ -93,7 +93,9 @@ def _score_event_for_volunteer(event, volunteer):
 
 @api_view(["GET"])
 def get_events(request):
-    return Response(events)
+    events = EventDetails.objects.all()
+    serializedData = EventDetailsSerializer(events, many=True).data
+    return Response(serializedData)
 
 @api_view(["POST"])
 def create_event(request):

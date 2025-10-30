@@ -2,7 +2,6 @@ import EventForm from "../components/EventForm.jsx"
 import { useState, useEffect } from "react"
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
-import { format } from "date-fns"
 
 function EventManagement() {
   
@@ -83,9 +82,9 @@ function EventManagement() {
     const parsedEvents = []
     for(let i = 0; i < events.length; i++) {
       parsedEvents.push({
-        title: events[i].name,
-        start: format(events[i].date, "yyyy-MM-dd"),
-        end: format(events[i].date, "yyyy-MM-dd"),
+        title: events[i].event_name,
+        start: events[i].start_date,
+        end: events[i].date,
         extendedProps: {
           eventData: {...events[i]}, 
           index: i
@@ -102,9 +101,9 @@ function EventManagement() {
     const arrayIndex = newEvent ? eventsArray.length : clickedEvent.extendedProps.index // Stores array index of event in eventsArray
     const event = {
       // These are properties specifically for FullCalender to read
-      title: eventFormData.name,
-      start: format(eventFormData.date, "yyyy-MM-dd"),
-      end: format(eventFormData.date, "yyyy-MM-dd"),
+      title: eventFormData.event_name,
+      start: eventFormData.start_date,
+      end: eventFormData.end_date,
       
       // extendedProps stores all of the event form data and its index in the eventsArray to be retrieved later.
       extendedProps: {
