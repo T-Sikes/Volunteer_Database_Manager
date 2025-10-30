@@ -27,7 +27,7 @@ function EventForm(props) {
   const handleSave = (e) => {
     e.preventDefault()
     eventData.date = selectedDate
-    eventData.requiredSkills = selectedSkills
+    eventData.required_skills = selectedSkills
     props.submitEventForm(eventData)
     props.closeEventForm()
   }
@@ -46,10 +46,10 @@ function EventForm(props) {
           <div className="flex flex-col">
             <label>Name</label>
             <input
-              name = "name"
+              name = "event_name"
               type="text"
               required
-              value={eventData.name}
+              value={eventData.event_name}
               onChange={handleChange}
               className="border-2 rounded-lg border-gray-500"
             />
@@ -122,7 +122,7 @@ function EventForm(props) {
               <input
                 name = "zipCode"
                 type="number"
-                value={eventData.zipCode}
+                value={eventData.zip_code}
                 onChange={handleChange}
                 className="border-2 rounded-lg border-gray-500"
               />

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from volunteer_db.models import EventDetails
 
 class MatchRequestSerializer(serializers.Serializer):
     volunteerName = serializers.CharField(max_length=100)
@@ -14,3 +15,9 @@ class MatchRequestSerializer(serializers.Serializer):
         if not v:
             raise serializers.ValidationError("volunteerName cannot be blank")
         return v
+
+
+class EventDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventDetails
+        fields = "__all__"

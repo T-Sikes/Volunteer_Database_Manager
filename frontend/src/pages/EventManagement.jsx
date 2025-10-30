@@ -7,14 +7,14 @@ import { format } from "date-fns"
 function EventManagement() {
   
   let blankEvent = {
-    name: "",
+    event_name: "",
     description: "",
     location: "",
     address: "",
     city: "",
     state: "",
-    zipCode: "",
-    requiredSkills: "",
+    zip_code: "",
+    required_skills: "",
     urgency: ""
   }
   const [showEventForm, setShowEventForm] = useState(false)

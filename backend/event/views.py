@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import MatchRequestSerializer
 from datetime import datetime
+from .serializers import EventDetailsSerializer
+from volunteer_db.models import EventDetails
 # Mock data
 matches = []
 notifications = []
@@ -96,9 +98,11 @@ def get_events(request):
 @api_view(["POST"])
 def create_event(request):
     data = request.data
-    if data:
-        return Response(data, status=status.HTTP_201_CREATED)
-    return Response("", status=status.HTTP_400_BAD_REQUEST)
+    serializer = EventDetailsSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["PUT"])
 def update_event(request, pk):
