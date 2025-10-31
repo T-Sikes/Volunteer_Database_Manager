@@ -7,19 +7,20 @@ function VolunteerHistory() {
   const [historyData, setHistoryData] = useState([]);
   const [events, setEvents] = useState([]); // For the form dropdown
   const API_BASE = "http://127.0.0.1:8000/user";
-
-
+  const username = "johndoe";
+  
 
 // Pull existing volunteer history from backend
-  useEffect(() => {
-    fetch(`${API_BASE}/history/`)
+    useEffect(() => {
+    fetch(`${API_BASE}/history/${username}/`)
       .then(res => res.json())
       .then(data => setHistoryData(data))
       .catch(err => console.error("Failed to fetch history:", err));
-  }, []);
+  }, [username]);
 
+   // Pull events from backend
   useEffect(() => {
-    fetch(`${API_BASE}/events/`) // 
+    fetch(`${API_BASE}/events/`)
       .then(res => res.json())
       .then(data => setEvents(data))
       .catch(err => {
@@ -34,20 +35,31 @@ function VolunteerHistory() {
 
 
   const submitRecord = (record) => {
-    fetch(`${API_BASE}/history/save/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(record),
+  fetch(`${API_BASE}/history/${username}/save/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(record),
+  })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.json();
     })
-      .then(res => res.json())
-      .then(data => {
-        // Append saved record to the frontend state
-        setHistoryData([...historyData, data.data]);
-        setShowForm(false);
-      })
-      .catch(err => console.error("Failed to save record:", err));
-  };
-
+    .then(data => {
+      console.log("Backend response:", data); // Debug log
+      
+      // Backend returns the serialized record in data.data
+      const newRecord = data.data;
+      
+      setHistoryData([...historyData, newRecord]);
+      setShowForm(false);
+    })
+    .catch(err => {
+      console.error("Failed to save record:", err);
+      alert("Failed to save record. Check console for details.");
+    });
+};
 
   const toggleForm = () => setShowForm(!showForm);
 
