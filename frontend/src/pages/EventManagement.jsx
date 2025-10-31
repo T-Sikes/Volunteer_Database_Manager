@@ -77,6 +77,22 @@ function EventManagement() {
     }
   }
 
+  // Update event in database (when the database is implemented)
+  const deleteEvent = async () => {
+    const pk = clickedEvent.extendedProps.eventData.id
+    try{
+      const response = await fetch(`http://127.0.0.1:8000/event/${pk}/`,{
+        method: "DELETE",
+      })
+      await response.json()
+      fetchEvents()
+
+    } catch (err) {
+      console.log(err)
+    }
+    toggleEventForm()
+  }
+
   // Process fetched events so they can be read by FullCalendar
   const parseEvents = (events) => {
     const parsedEvents = []
@@ -115,8 +131,9 @@ function EventManagement() {
     if (newEvent){
       addEvent(event)
     }
-    else
+    else{
       updateEvent(event, event.extendedProps.eventData.id)
+    }
   }
 
   // Function for showing showing event form when an event is clicked
@@ -143,7 +160,13 @@ function EventManagement() {
         {/* Only show event form if showEventForm is true */}
         {showEventForm && 
           <div className="absolute inset-0 z-10 bg-[rgba(0,0,0,0.5)] h-screen w-screen">
-            <EventForm openedEvent={clickedEvent ? clickedEvent.extendedProps.eventData : blankEvent} submitEventForm={getEventFormData} closeEventForm={toggleEventForm}/>
+            <EventForm 
+            openedEvent={clickedEvent ? clickedEvent.extendedProps.eventData : blankEvent} 
+            submitEventForm={getEventFormData} 
+            closeEventForm={toggleEventForm}
+            deleteEvent={deleteEvent}
+            newEvent={clickedEvent ? false : true}
+            />
           </div>
         }
       </div>

@@ -158,10 +158,10 @@ class UserProfile(models.Model):
 # =========================
 class EventDetails(models.Model):
     event_name = models.CharField(max_length=200)
-    description = models.TextField(null=True)
-    location = models.CharField(max_length=200, null=True)
+    description = models.TextField(null=True, blank=True)
+    location = models.CharField(max_length=200, null=True, blank=True)
     required_skills = models.JSONField(validators=[validate_is_list], null=True)
-    urgency = models.CharField(max_length=50, validators=[validate_urgency], null=True)
+    urgency = models.CharField(max_length=50, validators=[validate_urgency], null=True, blank=True)
     address = models.CharField(max_length=200)
     city = models.CharField(max_length=50)
     state = models.CharField(

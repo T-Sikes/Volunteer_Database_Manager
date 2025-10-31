@@ -106,20 +106,35 @@ def create_event(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(["PUT"])
-def update_event(request, pk):
-    data = request.data
-    found_index = -1
-    for index, d in enumerate(events):
-        if d.get('id') == pk:
-            found_index = index
-            break
-    if data and found_index != -1:
-        events[found_index] = data
-        events[found_index]["id"] = pk
-        print(events)
-        return Response(data, status=status.HTTP_201_CREATED)
-    return Response("", status=status.HTTP_400_BAD_REQUEST)
+@api_view(["PUT", "DELETE"])
+def update_or_delete_event(request, pk):
+    try :
+        event = EventDetails.objects.get(pk=pk)
+    except EventDetails.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    if request.method == "DELETE":
+        event.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    elif request.method == "PUT":
+        data = request.data
+        serializer = EventDetailsSerializer(event, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # data = request.data
+    # found_index = -1
+    # for index, d in enumerate(events):
+    #     if d.get('id') == pk:
+    #         found_index = index
+    #         break
+    # if data and found_index != -1:
+    #     events[found_index] = data
+    #     events[found_index]["id"] = pk
+    #     print(events)
+    #     return Response(data, status=status.HTTP_201_CREATED)
+    # return Response("", status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["GET"])
 def get_volunteers(request):
