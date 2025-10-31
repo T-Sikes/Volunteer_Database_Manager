@@ -14,8 +14,8 @@ function App() {
         <NotificationSystem />
         <Routes>
           <Route path="/event-management" element={<EventManagement />} />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/volunteer-history" element={<VolunteerHistory />} />
+          <Route path="/profile/:username" element={<UserProfile />} />
+          <Route path="/volunteer-history/" element={<VolunteerHistory />} />
           <Route path="/volunteer-matching" element={<VolunteerMatching />} />
           <Route path="/notifications" element={<NotificationPage />} />
           <Route path='/user-login' element={<UserLogin/>} />
