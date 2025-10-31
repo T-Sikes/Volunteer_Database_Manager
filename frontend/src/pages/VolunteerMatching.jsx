@@ -11,9 +11,9 @@ export default function VolunteerMatching() {
     async function fetchData() {
       try {
         const [volRes, evRes, matchRes] = await Promise.all([
-          fetch("http://localhost:8000/api/events/volunteers/"),
-          fetch("http://localhost:8000/api/events/"),
-          fetch("http://localhost:8000/api/events/matches/")
+          fetch("http://localhost:8000/event/volunteers/"),
+          fetch("http://localhost:8000/event/"),
+          fetch("http://localhost:8000/event/matches/")
         ]);
 
         if (!volRes.ok || !evRes.ok || !matchRes.ok) throw new Error("Failed to fetch backend data");
@@ -39,7 +39,7 @@ export default function VolunteerMatching() {
   const handleMatchSubmit = async (match) => {
     try {
       // POST to backend
-      const response = await fetch("http://localhost:8000/api/events/match/", {
+      const response = await fetch("http://localhost:8000/event/match/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(match),
