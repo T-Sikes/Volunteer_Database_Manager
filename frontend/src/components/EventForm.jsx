@@ -83,6 +83,7 @@ function EventForm(props) {
                 value={eventData.event_name}
                 onChange={handleChange}
                 className="border-2 rounded-lg border-gray-500"
+                maxLength="200"
               />
 
               <label>Description</label>
@@ -141,6 +142,7 @@ function EventForm(props) {
                 value={eventData.location}
                 onChange={handleChange}
                 className="border-2 rounded-lg border-gray-500"
+                maxLength="200"
               />
 
               <label>Address <span className="text-red-500">*</span></label>
@@ -151,6 +153,7 @@ function EventForm(props) {
                 onChange={handleChange}
                 className="border-2 rounded-lg border-gray-500"
                 required
+                maxLength="200"
               />
 
               <div className="flex mt-4 space-x-1">
@@ -162,6 +165,7 @@ function EventForm(props) {
                   onChange={handleChange}
                   className="border-2 rounded-lg border-gray-500"
                   required
+                  maxLength="50"
                 />
 
                 <label>State <span className="text-red-500">*</span></label>

@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from datetime import timedelta
 
 #these classes represent names of tables that are translated by django to SQL
 
@@ -21,7 +22,7 @@ def validate_urgency(value):
         raise ValidationError(f"Urgency must be one of {valid_levels}.")
 
 def validate_future_date(value):
-    if value < timezone.now():
+    if value <= (timezone.now() - timedelta(days=1)):
         raise ValidationError("Event date cannot be in the past.")
     
 def validate_is_list(value):
