@@ -50,12 +50,13 @@ function EventForm(props) {
     props.closeEventForm()
   }
 
-  // Deleting event
+  // Delete event
   const handleDelete = (e) => {
     e.preventDefault()
     props.deleteEvent()
   }
 
+  // Show our hide message confirming that you want to delete an event
   const toggleConfirmMsg = () => setShowConfirmMsg(!showConfirmMsg)
   
 
@@ -109,6 +110,7 @@ function EventForm(props) {
                     startDate={selectedStartDate}
                     endDate={selectedEndDate}
                     minDate={new Date()}
+                    onChangeRaw={e => e.preventDefault()}  // Prevent user from typing date and time manually
                   />
                 </div>
 
@@ -127,6 +129,7 @@ function EventForm(props) {
                     startDate={selectedStartDate}
                     endDate={selectedEndDate}
                     minDate={selectedStartDate || new Date()}
+                    onChangeRaw={e => e.preventDefault()}
                   />
                 </div>
               </div>
@@ -169,7 +172,7 @@ function EventForm(props) {
                   className="border-2 rounded-lg border-gray-500"
                   required
                 >
-                  <option value={null}></option>
+                  <option value="" selected disabled hidden></option>
                   {states.map(state => {
                     return(
                       <option key={state} value={state}>{state}</option>
@@ -226,31 +229,17 @@ function EventForm(props) {
                   ))}
                   </div>
               )}
-
-              {/* Old Implementation */}
-              {/* <select
-                name = "requiredSkills"
-                value={eventData.requiredSkills}
-                onChange={handleChange}
-                className="border-2 rounded-lg border-gray-500"
-              >
-                <option value={null}></option>
-                {skills.map(skill => {
-                  return(
-                    <option key={skill} value={skill}>{skill}</option>
-                  )
-                })}
-              </select> */}
-
-              <label>Urgency</label>
+              
+              <label>Urgency <span className="text-red-500">*</span></label>
               <select
                 name = "urgency"
                 value={eventData.urgency}
                 onChange={handleChange}
                 className="border-2 rounded-lg border-gray-500"
+                required
               >
-                <option value={null}></option>
-                <option value="low">Low</option>
+                <option value="" selected disabled hidden></option>
+                <option selected value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
               </select>
