@@ -1,42 +1,45 @@
 import { useState, useEffect } from "react";
-import UserProfileForm from "../components/userProfileForm.jsx";
+import { useParams } from "react-router-dom";
+import UserProfileForm from "../components/UserProfileForm.jsx";
 
 function UserProfile() {
-  const [showForm, setShowForm] = useState(true);
+  const { username } = useParams();
+  const [showForm, setShowForm] = useState(false); // show form only when editing
   const [profileData, setProfileData] = useState(null);
   const API_BASE = "http://127.0.0.1:8000/user";
 
-
   useEffect(() => {
+    if (!username) return;
+
     // fetch existing profile
-    fetch(`${API_BASE}/profile/`)
+    fetch(`${API_BASE}/profile/${username}/`)
       .then(res => res.json())
       .then(data => {
         setProfileData(data);
-        setShowForm(false); // hide form if we have data
       })
       .catch(err => console.error("Error fetching profile:", err));
-  }, []);
+  }, [username]);
 
   const submitProfile = (data) => {
-    // POST to backend save endpoint
-    fetch(`${API_BASE}/profile/save/`, {
+    fetch(`${API_BASE}/profile/${username}/save/`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     })
       .then(res => res.json())
       .then(savedData => {
-        console.log("Saved:", savedData);
-        setProfileData(savedData.data); // update state with response
-        setShowForm(false); // hide form after save
+        setProfileData(savedData.data); // update state
+        setShowForm(false); // hide form after saving
       })
       .catch(err => console.error("Error saving profile:", err));
   };
 
   const toggleForm = () => setShowForm(!showForm);
+
+  // If no profile yet, force show the form
+  if (!profileData) {
+    return <UserProfileForm submitProfile={submitProfile} closeForm={toggleForm} initialData={profileData} />;
+  }
 
   return (
     <>
@@ -45,7 +48,7 @@ function UserProfile() {
       ) : (
         <div className="flex justify-center items-center h-screen w-screen">
           <div className="bg-white shadow-lg rounded-lg p-6 w-96">
-            <h2 className="text-xl font-bold mb-4 text-gray-800 text-center">Profile Saved!</h2>
+            <h2 className="text-xl font-bold mb-4 text-gray-800 text-center">{profileData.full_name || "User Profile"}</h2>
             <div className="text-black p-4 rounded text-center">
               <p><strong>Full Name:</strong> {profileData.full_name}</p>
               <p><strong>Address 1:</strong> {profileData.address1}</p>

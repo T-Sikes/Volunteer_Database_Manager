@@ -190,10 +190,21 @@ class EventDetails(models.Model):
 #  VOLUNTEER HISTORY TABLE
 # =========================
 class VolunteerHistory(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
     user = models.ForeignKey(UserCredentials, on_delete=models.CASCADE)
     event = models.ForeignKey(EventDetails, on_delete=models.CASCADE)
     participation_date = models.DateField(default=timezone.now)
     hours_served = models.PositiveIntegerField(default=0)
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES, 
+        default='pending'
+    )
 
     def __str__(self):
         return f"{self.user.username} - {self.event.event_name}"
