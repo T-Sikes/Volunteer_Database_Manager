@@ -1,7 +1,7 @@
 import { useState } from "react" 
 import Datepicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css"
-import { format } from "date-fns"
+import { formatInTimeZone } from "date-fns-tz"
 
 function EventForm(props) {
   // Hardcoded required skills for now
@@ -10,8 +10,8 @@ function EventForm(props) {
 
 
   const [eventData, setEventData] = useState({...props.openedEvent})  // State variable that stores data from the event form in an object
-  const [selectedStartDate, setSelectedStartDate] = useState("start_date" in props.openedEvent ? props.openedEvent.start_date : new Date())
-  const [selectedEndDate, setSelectedEndDate] = useState("end_date" in props.openedEvent ? props.openedEvent.end_date : new Date())
+  const [selectedStartDate, setSelectedStartDate] = useState("start_date" in props.openedEvent ? new Date(props.openedEvent.start_date) : new Date())
+  const [selectedEndDate, setSelectedEndDate] = useState("end_date" in props.openedEvent ? new Date(props.openedEvent.end_date) : new Date())
   const [selectedSkills, setSelectedSkills] = useState(props.openedEvent.required_skills)
   const [skillsDropdownOpen, setSkillsDropdownOpen] = useState(false);
   
@@ -28,8 +28,8 @@ function EventForm(props) {
   // Pass event form data to parent component and close form when user clicks save
   const handleSave = (e) => {
     e.preventDefault()
-    eventData.start_date = format(selectedStartDate, "yyyy-MM-dd HH:mm:ss")
-    eventData.end_date = format(selectedEndDate, "yyyy-MM-dd HH:mm:ss")
+    eventData.start_date = formatInTimeZone(selectedStartDate, "UTC", "yyyy-MM-dd HH:mm:ss")
+    eventData.end_date = formatInTimeZone(selectedEndDate, "UTC", "yyyy-MM-dd HH:mm:ss")
     eventData.required_skills = selectedSkills
     props.submitEventForm(eventData)
     props.closeEventForm()

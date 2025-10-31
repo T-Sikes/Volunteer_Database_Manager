@@ -84,7 +84,7 @@ function EventManagement() {
       parsedEvents.push({
         title: events[i].event_name,
         start: events[i].start_date,
-        end: events[i].date,
+        end: events[i].end_date,
         extendedProps: {
           eventData: {...events[i]}, 
           index: i
@@ -137,6 +137,8 @@ function EventManagement() {
           height="100%"
           expandRows={true}
           eventClick={eventClicked}
+          eventDisplay="block"
+          timeZone="local"
         />
         {/* Only show event form if showEventForm is true */}
         {showEventForm && 
