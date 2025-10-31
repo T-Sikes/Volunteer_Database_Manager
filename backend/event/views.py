@@ -123,18 +123,6 @@ def update_or_delete_event(request, pk):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    # data = request.data
-    # found_index = -1
-    # for index, d in enumerate(events):
-    #     if d.get('id') == pk:
-    #         found_index = index
-    #         break
-    # if data and found_index != -1:
-    #     events[found_index] = data
-    #     events[found_index]["id"] = pk
-    #     print(events)
-    #     return Response(data, status=status.HTTP_201_CREATED)
-    # return Response("", status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["GET"])
 def get_volunteers(request):
