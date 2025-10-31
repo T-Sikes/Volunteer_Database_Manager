@@ -1,19 +1,20 @@
 export const loginUser = async (email, password) => {
   try {
-    const response = await fetch("http://127.0.0.1:8000/login", {
+    const response = await fetch("http://127.0.0.1:8000/user_login/login/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username: email, password: password }),
+      body: JSON.stringify({ username: email, password }),
     });
 
     if (!response.ok) {
-      throw new Error("Login failed");
+      const err = await response.json();
+      throw new Error(err.detail || "Login failed");
     }
 
     const data = await response.json();
-    return data; // Django’s JSON response
+    return data; // Django’s JSON response with token
   } catch (error) {
     console.error("Error:", error);
     return { error: error.message };
@@ -22,23 +23,23 @@ export const loginUser = async (email, password) => {
 
 export const registerUser = async (email, password) => {
   try {
-    const response = await fetch("http://127.0.0.1:8000/signup", {
+    const response = await fetch("http://127.0.0.1:8000/user_login/signup/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username: email, password: password }),
+      body: JSON.stringify({ username: email, email, password }),
     });
 
     if (!response.ok) {
-      throw new Error("Signup failed");
+      const err = await response.json();
+      throw new Error(JSON.stringify(err));
     }
 
     const data = await response.json();
-    return data; // Django’s JSON response
+    return data; // Django’s JSON response with token
   } catch (error) {
     console.error("Error:", error);
     return { error: error.message };
   }
 };
-
