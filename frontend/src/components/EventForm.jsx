@@ -39,7 +39,7 @@ function EventForm(props) {
 
     eventData.start_date = formatInTimeZone(selectedStartDate, "UTC", "yyyy-MM-dd HH:mm:ss")
     eventData.end_date = formatInTimeZone(selectedEndDate, "UTC", "yyyy-MM-dd HH:mm:ss")
-    eventData.required_skills = selectedSkills
+    eventData.required_skills = selectedSkills != "" ? selectedSkills : []
     props.submitEventForm(eventData)
     props.closeEventForm()
   }
