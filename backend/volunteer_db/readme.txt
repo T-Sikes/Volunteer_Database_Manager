@@ -5,7 +5,7 @@ READ THIS FULLY BEFORE EDITING OR MAKING ANY CHANGES THAT DEAL WITH THE DATABASE
 This app uses MySQL for the database. Follow these steps to get set up:
 
 ## 1. Install Dependencies
-Make sure you have MySQL installed and running.  
+Make sure you have MySQL installed and running.
 Install Python dependencies:
 
 ```bash

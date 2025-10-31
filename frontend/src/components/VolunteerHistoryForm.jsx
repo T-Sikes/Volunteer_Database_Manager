@@ -9,30 +9,24 @@ function VolunteerHistoryForm({ submitRecord, closeForm, events = [] }) {
 
 
   const handleSubmit = (e) => {
-    e. preventDefault(); 
+  e.preventDefault(); 
 
-    //validations
-    if (!selectedEvent) return alert("Select an event");
-    if (!hours || isNaN(hours)) return alert("Hours must be a number");
-    if (!status) return alert("Status is required");
+  //validations
+  if (!selectedEvent) return alert("Select an event");
+  if (!hours || isNaN(hours)) return alert("Hours must be a number");
+  if (!status) return alert("Status is required");
 
+  submitRecord({
+    event_id: selectedEvent.id,
+    hours: Number(hours),
+    status: status,
+  });
 
-    submitRecord({
-      eventName: selectedEvent.name,
-      description: selectedEvent.description || "",
-      location: selectedEvent.location || "",
-      requiredSkills: selectedEvent.requiredSkills || [],
-      urgency: selectedEvent.urgency || "",
-      eventDate: selectedEvent.eventDate || "",
-      hours: Number(hours),
-      status,
-    });
-
-    //reset form
-    setSelectedEvent(null);
-    setHours("");
-    setStatus("");
-  };
+  //reset form
+  setSelectedEvent(null);
+  setHours("");
+  setStatus("");
+};
 
   return (
     <form className="bg-white p-6 rounded-xl shadow-md w-96 flex flex-col space-y-4">
@@ -42,16 +36,16 @@ function VolunteerHistoryForm({ submitRecord, closeForm, events = [] }) {
       <div className="flex flex-col">
         <label className="mb-1 font-medium text-gray-700">Event*</label>
         <select
-          value={selectedEvent ? selectedEvent.name : ''}
+          value={selectedEvent ? selectedEvent.id : ''}
           onChange={e => {
-            const event = events.find(ev => ev.name === e.target.value);
+            const event = events.find(ev => ev.id === parseInt(e.target.value));
             setSelectedEvent(event || null);
           }}
           className="border-2 rounded-xl border-gray-500 p-2 text-black bg-white"
         >
           <option value="">Select an event</option>
-          {events.map((ev, index) => (
-            <option key={index} value={ev.name}>{ev.name}</option>
+          {events.map((ev) => (
+            <option key={ev.id} value={ev.id}>{ev.name}</option>
           ))}
         </select>
       </div>
