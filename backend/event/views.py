@@ -1,11 +1,11 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import MatchRequestSerializer
 from datetime import datetime
 from volunteer_db.models import EventDetails, UserProfile, VolunteerHistory, UserCredentials, Notification
+from .serializers import VolunteerSerializer, EventSerializer, MatchRequestSerializer
 
-URGENCY_WEIGHT = {"low": 0, "medium": 1, "high": 2}
+URGENCY_WEIGHT = {"low": 0, "medium": 1, "high": 2, "critical": 3}
 
 def _normalize_list(lst):
     return [s.strip().lower() for s in lst]
@@ -17,7 +17,7 @@ def _score_event_for_volunteer(event, volunteer):
     urgency = event.get("urgency", "low").lower()
     urgency_point = URGENCY_WEIGHT.get(urgency, 0)
     try:
-        event_date = datetime.fromisoformat(event.get("date"))
+        event_date = datetime.fromisoformat(event.get("eventDate"))
         days_until = (event_date - datetime.now()).days
         date_score = max(0, 30 - max(days_until, 0)) / 30
     except Exception:
@@ -33,11 +33,24 @@ def get_events(request):
             "name": e.event_name,
             "description": e.description,
             "location": e.location,
-            "requiredSkills": e.required_skills.split(",") if e.required_skills else [],
+            "requiredSkills": e.required_skills if e.required_skills else [],
             "urgency": e.urgency,
-            "date": e.event_date.isoformat()
+            "eventDate": e.start_date.isoformat()
         }
         for e in db_events
+    ]
+    return Response(data)
+
+@api_view(["GET"])
+def get_volunteers(request):
+    profiles = UserProfile.objects.select_related("user").all()
+    data = [
+        {
+            "id": p.user.id,
+            "name": p.full_name,
+            "skills": p.skills if p.skills else []
+        }
+        for p in profiles
     ]
     return Response(data)
 
@@ -49,9 +62,10 @@ def create_event(request):
             event_name=data.get("name"),
             description=data.get("description", ""),
             location=data.get("location", ""),
-            required_skills=",".join(data.get("requiredSkills", [])),
-            urgency=data.get("urgency", "Low"),
-            event_date=data.get("date")
+            required_skills=data.get("requiredSkills", []),
+            urgency=data.get("urgency", "low"),
+            start_date=data.get("eventDate"),
+            end_date=data.get("eventDate") 
         )
         return Response({"id": new_event.id, "message": "Event created."}, status=status.HTTP_201_CREATED)
     except Exception as e:
@@ -67,26 +81,13 @@ def update_event(request, pk):
     data = request.data
     for field, value in data.items():
         if field == "requiredSkills":
-            value = ",".join(value)
-        if hasattr(event, field):
+            setattr(event, field, value)
+        elif hasattr(event, field):
             setattr(event, field, value)
     event.save()
     return Response({"message": "Event updated."}, status=status.HTTP_200_OK)
 
-@api_view(["GET"])
-def get_volunteers(request):
-    profiles = UserProfile.objects.select_related("user").all()
-    data = [
-        {
-            "id": p.user.id,
-            "name": p.full_name,
-            "skills": [s.strip() for s in p.skills.split(",")] if p.skills else []
-        }
-        for p in profiles
-    ]
-    return Response(data)
-
-matches = [] 
+matches = []
 
 @api_view(["POST"])
 def match_volunteers(request):
@@ -105,28 +106,28 @@ def match_volunteers(request):
         volunteer = {
             "id": volunteer_profile.user.id,
             "name": volunteer_profile.full_name,
-            "skills": [s.strip() for s in volunteer_profile.skills.split(",")] if volunteer_profile.skills else []
+            "skills": volunteer_profile.skills if volunteer_profile.skills else []
         }
     except UserProfile.DoesNotExist:
         return Response({"error": "Volunteer not found."}, status=status.HTTP_404_NOT_FOUND)
 
     if selected_event_name:
-        try:
-            event_obj = EventDetails.objects.get(event_name__iexact=selected_event_name)
-        except EventDetails.DoesNotExist:
-            event_obj = EventDetails.objects.create(
-                event_name=selected_event_name,
-                location=posted_location or "Unknown",
-                required_skills=",".join(posted_required_skills),
-                urgency="Low",
-                event_date=posted_event_date or datetime.now().date()
-            )
+        event_obj, created = EventDetails.objects.get_or_create(
+            event_name=selected_event_name,
+            defaults={
+                "location": posted_location or "Unknown",
+                "required_skills": posted_required_skills,
+                "urgency": "low",
+                "start_date": posted_event_date or datetime.now(),
+                "end_date": posted_event_date or datetime.now()
+            }
+        )
 
-        matched_skills = [s for s in _normalize_list(event_obj.required_skills.split(",")) if s in _normalize_list(volunteer["skills"])]
+        matched_skills = [s for s in _normalize_list(event_obj.required_skills) if s in _normalize_list(volunteer["skills"])]
         match_entry = {
             "volunteerName": volunteer["name"],
             "eventName": event_obj.event_name,
-            "eventDate": event_obj.event_date.isoformat(),
+            "eventDate": event_obj.start_date.isoformat(),
             "location": event_obj.location,
             "matchedSkills": matched_skills,
             "matchType": "manual",
@@ -135,21 +136,23 @@ def match_volunteers(request):
 
         Notification.objects.create(
             recipient=volunteer_profile.user,
-            message=f"You were manually matched to event '{event_obj.event_name}' on {event_obj.event_date}"
+            message=f"You were manually matched to event '{event_obj.event_name}' on {event_obj.start_date}"
         )
 
+        matches.append(match_entry)
         return Response(match_entry, status=status.HTTP_200_OK)
 
     all_events = EventDetails.objects.all()
     scored_events = []
+
     for e in all_events:
         event_dict = {
             "id": e.id,
             "name": e.event_name,
             "location": e.location,
-            "requiredSkills": e.required_skills.split(",") if e.required_skills else [],
+            "requiredSkills": e.required_skills if e.required_skills else [],
             "urgency": e.urgency,
-            "date": e.event_date.isoformat()
+            "eventDate": e.start_date.isoformat()
         }
         score = _score_event_for_volunteer(event_dict, volunteer)
         if score >= 10:
@@ -158,13 +161,13 @@ def match_volunteers(request):
     if not scored_events:
         return Response({"message": "No matching events found."}, status=status.HTTP_200_OK)
 
-    scored_events.sort(key=lambda se: (-se[0], se[1].get("date", "")))
+    scored_events.sort(key=lambda se: (-se[0], se[1].get("eventDate", "")))
     best_match = scored_events[0][1]
 
     match_entry = {
         "volunteerName": volunteer["name"],
         "eventName": best_match["name"],
-        "eventDate": best_match["date"],
+        "eventDate": best_match["eventDate"],
         "location": best_match["location"],
         "matchedSkills": [s for s in best_match.get("requiredSkills", []) if s in _normalize_list(volunteer["skills"])],
         "matchType": "auto",
@@ -173,14 +176,28 @@ def match_volunteers(request):
 
     Notification.objects.create(
         recipient=volunteer_profile.user,
-        message=f"You were automatically matched to event '{best_match['name']}' on {best_match['date']}"
+        message=f"You were automatically matched to event '{best_match['name']}' on {best_match['eventDate']}"
     )
 
+    matches.append(match_entry)
     return Response(match_entry, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
 def get_all_matches(request):
     return Response(matches, status=status.HTTP_200_OK)
+
+@api_view(["DELETE"])
+def delete_match(request, volunteer_name):
+    global matches
+    volunteer_name_lower = volunteer_name.strip().lower()
+
+    original_length = len(matches)
+    matches = [m for m in matches if m.get("volunteerName", "").strip().lower() != volunteer_name_lower]
+    
+    if len(matches) < original_length:
+        return Response({"message": f"Match for {volunteer_name} removed successfully."}, status=status.HTTP_200_OK)
+    else:
+        return Response({"error": f"No match found for volunteer: {volunteer_name}"}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(["GET"])
 def get_notifications(request):
