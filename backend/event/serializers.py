@@ -26,5 +26,17 @@ class MatchRequestSerializer(serializers.Serializer):
     eventDate = serializers.CharField(required=False, allow_blank=True)
     location = serializers.CharField(required=False, allow_blank=True)
     requiredSkills = serializers.ListField(
-        child=serializers.CharField(), required=False, allow_empty=True
+        child=serializers.CharField(max_length=100), required=False, allow_empty=True
     )
+
+    def validate_volunteerName(self, value):
+        v = value.strip()
+        if not v:
+            raise serializers.ValidationError("volunteerName cannot be blank")
+        return v
+
+
+class EventDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventDetails
+        fields = "__all__"
