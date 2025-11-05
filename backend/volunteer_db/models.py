@@ -5,9 +5,6 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from datetime import timedelta
 
-#these classes represent names of tables that are translated by django to SQL
-
-
 # =========================
 #  Custom Validators
 # =========================
@@ -30,7 +27,6 @@ def validate_is_list(value):
         raise ValidationError("Required skills must be a list")
 
 
-
 # =========================
 #  USER MANAGER
 # =========================
@@ -40,7 +36,7 @@ class UserCredentialsManager(BaseUserManager):
         if not username:
             raise ValueError("Users must have a username.")
         user = self.model(username=username, **extra_fields)
-        user.set_password(password)  # hashes password automatically
+        user.set_password(password)
         user.save(using=self._db)
         return user
 
@@ -135,7 +131,6 @@ class States(models.TextChoices):
 #  USER PROFILE TABLE
 # =========================
 
-
 class UserProfile(models.Model):
     user = models.OneToOneField(UserCredentials, on_delete=models.CASCADE, related_name="profile")
     full_name = models.CharField(max_length=200)
@@ -153,10 +148,16 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.full_name} ({self.user.username})"
-    
+
+    class Meta:
+        verbose_name = "User Profile"
+        verbose_name_plural = "User Profiles"
+
+
 # =========================
 #  EVENT DETAILS TABLE
 # =========================
+
 class EventDetails(models.Model):
     event_name = models.CharField(max_length=200)
     description = models.TextField(null=True, blank=True)
@@ -185,11 +186,16 @@ class EventDetails(models.Model):
 
     def __str__(self):
         return self.event_name
-    
+
+    class Meta:
+        verbose_name = "Event Detail"
+        verbose_name_plural = "Event Details"
+
 
 # =========================
 #  VOLUNTEER HISTORY TABLE
 # =========================
+
 class VolunteerHistory(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -209,3 +215,24 @@ class VolunteerHistory(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.event.event_name}"
+
+    class Meta:
+        verbose_name = "Volunteer History"
+        verbose_name_plural = "Volunteer Histories"
+        
+# =========================
+#  NOTIFICATIONS TABLE
+# =========================
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(UserCredentials, on_delete=models.CASCADE, related_name="notifications")
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notification to {self.recipient.username} at {self.timestamp}"
+
+    class Meta:
+        verbose_name = "Notification"
+        verbose_name_plural = "Notifications"
+        ordering = ['-timestamp']
