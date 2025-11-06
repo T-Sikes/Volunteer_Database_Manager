@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
 from volunteer_db.models import EventDetails, UserProfile, VolunteerHistory, UserCredentials, Notification
-from .serializers import VolunteerSerializer, EventSerializer, MatchRequestSerializer
+from .serializers import VolunteerSerializer, EventSerializer, MatchRequestSerializer, EventDetailsSerializer
 
 URGENCY_WEIGHT = {"low": 0, "medium": 1, "high": 2, "critical": 3}
 
@@ -26,20 +26,9 @@ def _score_event_for_volunteer(event, volunteer):
 
 @api_view(["GET"])
 def get_events(request):
-    db_events = EventDetails.objects.all()
-    data = [
-        {
-            "id": e.id,
-            "name": e.event_name,
-            "description": e.description,
-            "location": e.location,
-            "requiredSkills": e.required_skills if e.required_skills else [],
-            "urgency": e.urgency,
-            "eventDate": e.start_date.isoformat()
-        }
-        for e in db_events
-    ]
-    return Response(data)
+    events = EventDetails.objects.all()
+    serializedData = EventDetailsSerializer(events, many=True).data
+    return Response(serializedData)
 
 @api_view(["GET"])
 def get_volunteers(request):
@@ -57,38 +46,31 @@ def get_volunteers(request):
 @api_view(["POST"])
 def create_event(request):
     data = request.data
-    try:
-        new_event = EventDetails.objects.create(
-            event_name=data.get("name"),
-            description=data.get("description", ""),
-            location=data.get("location", ""),
-            required_skills=data.get("requiredSkills", []),
-            urgency=data.get("urgency", "low"),
-            start_date=data.get("eventDate"),
-            end_date=data.get("eventDate") 
-        )
-        return Response({"id": new_event.id, "message": "Event created."}, status=status.HTTP_201_CREATED)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    serializer = EventDetailsSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(["PUT"])
-def update_event(request, pk):
+@api_view(["PUT", "DELETE"])
+def update_or_delete_event(request, pk):
     try:
-        event = EventDetails.objects.get(id=pk)
+        event = EventDetails.objects.get(pk=pk)
     except EventDetails.DoesNotExist:
-        return Response({"error": "Event not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
-    data = request.data
-    for field, value in data.items():
-        if field == "requiredSkills":
-            setattr(event, field, value)
-        elif hasattr(event, field):
-            setattr(event, field, value)
-    event.save()
-    return Response({"message": "Event updated."}, status=status.HTTP_200_OK)
+    if request.method == "DELETE":
+        event.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
+    elif request.method == "PUT":
+        data = request.data
+        serializer = EventDetailsSerializer(event, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 matches = []
-
 @api_view(["POST"])
 def match_volunteers(request):
     serializer = MatchRequestSerializer(data=request.data)

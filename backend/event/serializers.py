@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from volunteer_db.models import UserProfile, EventDetails
 
+
 class VolunteerSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='full_name')
     skills = serializers.ListField(source='skills')
@@ -19,7 +20,15 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventDetails
         fields = ['name', 'requiredSkills', 'eventDate', 'location']
-        
+
+
+class EventDetailsSerializer(serializers.ModelSerializer):
+    """Used for creating, updating, and retrieving EventDetails records."""
+    class Meta:
+        model = EventDetails
+        fields = "__all__"
+
+
 class MatchRequestSerializer(serializers.Serializer):
     volunteerName = serializers.CharField()
     eventName = serializers.CharField(required=False, allow_blank=True)
