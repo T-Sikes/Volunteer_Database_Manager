@@ -11,9 +11,9 @@ export default function VolunteerMatching() {
     async function fetchData() {
       try {
         const [volRes, evRes, matchRes] = await Promise.all([
-          fetch("http://localhost:8000/event/volunteers/"),
-          fetch("http://localhost:8000/event/"),
-          fetch("http://localhost:8000/event/matches/")
+          fetch("http://localhost:8000/api/events/volunteers/"),
+          fetch("http://localhost:8000/api/events/"),
+          fetch("http://localhost:8000/api/events/matches/")
         ]);
 
         if (!volRes.ok || !evRes.ok || !matchRes.ok) throw new Error("Failed to fetch backend data");
@@ -38,9 +38,8 @@ export default function VolunteerMatching() {
 
   const handleMatchSubmit = async (match) => {
     try {
-      console.log("Submitting match:", match);
-
-      const response = await fetch("http://localhost:8000/event/match/", {
+      // POST to backend
+      const response = await fetch("http://localhost:8000/api/events/match/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(match),
@@ -52,28 +51,22 @@ export default function VolunteerMatching() {
         return;
       }
 
+      // Update state
       let message = "";
-      let isUpdate = false;
-      
       setMatches(prev => {
         const idx = prev.findIndex(m => m.volunteerName.toLowerCase() === savedMatch.volunteerName.toLowerCase());
         const updated = [...prev];
         if (idx !== -1) {
           updated[idx] = savedMatch;
-          isUpdate = true;
+          message = `Updated ${savedMatch.volunteerName}'s match to ${savedMatch.eventName}`;
         } else {
           updated.push(savedMatch);
-          isUpdate = false;
+          message = `Matched ${savedMatch.volunteerName} to ${savedMatch.eventName}`;
         }
         return updated;
       });
 
-      if (isUpdate) {
-        message = `Updated ${savedMatch.volunteerName}'s match to ${savedMatch.eventName}`;
-      } else {
-        message = `Matched ${savedMatch.volunteerName} to ${savedMatch.eventName}`;
-      }
-
+      // Notify **after state update**
       notifySuccess(message);
 
     } catch (err) {
@@ -82,26 +75,12 @@ export default function VolunteerMatching() {
     }
   };
 
-  const handleRemove = async (index) => {
-    const removedMatch = matches[index];
-    
-    try {
-      const response = await fetch(`http://localhost:8000/event/match/${removedMatch.volunteerName}/`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        notifyError(error.error || "Failed to remove match from backend.");
-        return;
-      }
-      
-      setMatches(prev => prev.filter((_, i) => i !== index));
-      notifyError(`Removed ${removedMatch.volunteerName} from matches.`);
-    } catch (err) {
-      console.error(err);
-      notifyError("Error removing match from backend.");
-    }
+  const handleRemove = (index) => {
+    setMatches(prev => {
+      const updated = prev.filter((_, i) => i !== index);
+      return updated;
+    });
+    notifyInfo("Volunteer removed from list.");
   };
 
   return (
