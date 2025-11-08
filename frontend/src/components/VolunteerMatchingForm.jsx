@@ -12,7 +12,7 @@ export default function VolunteerMatchingForm({
   const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
-    if (!selectedVolunteer || !parentEvents.length) {
+    if (!selectedVolunteer || !parentEvents || parentEvents.length === 0) {
       setMatchedEvents([]);
       setSelectedEvent(null);
       return;
@@ -45,10 +45,8 @@ export default function VolunteerMatchingForm({
       setTimeout(() => notifyError("Please select a volunteer."), 0);
       return;
     }
-    submitMatch({ 
-      volunteerName: selectedVolunteer.name,
-      matchType: "auto"
-    });
+
+    submitMatch({ volunteerName: selectedVolunteer.name });
     closeForm();
   };
 
@@ -57,20 +55,19 @@ export default function VolunteerMatchingForm({
       setTimeout(() => notifyError(!selectedVolunteer ? "Please select a volunteer." : "Please select an event."), 0);
       return;
     }
+
     submitMatch({
       volunteerName: selectedVolunteer.name,
       volunteerSkills: selectedVolunteer.skills,
-      eventName: selectedEvent.name,  
-      eventDate: selectedEvent.event_date || selectedEvent.date,  
+      eventName: selectedEvent.name,
+      eventDate: selectedEvent.eventDate,
       location: selectedEvent.location,
-      requiredSkills: selectedEvent.requiredSkills || [],
-      matchType: "manual"
     });
     closeForm();
   };
 
   const handleCancel = () => {
-    setTimeout(() => notifyInfo("Volunteer matching canceled."), 0);
+    setTimeout(() => notifyInfo("Event update canceled."), 0);
     closeForm();
   };
 
@@ -104,7 +101,7 @@ export default function VolunteerMatchingForm({
           <select
             value={selectedEvent ? selectedEvent.name : ""}
             onChange={handleEventChange}
-            disabled={!selectedVolunteer || !matchedEvents.length}
+            disabled={!selectedVolunteer || matchedEvents.length === 0}
             className="w-full border-2 rounded-lg border-[#a5d9da] p-3 text-black bg-white focus:border-[#3fa2a5] focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
           >
             <option value="">
@@ -112,7 +109,7 @@ export default function VolunteerMatchingForm({
             </option>
             {matchedEvents.map(event => (
               <option key={event.name} value={event.name}>
-                {event.name} - {event.event_date || event.date} ({event.location})
+                {event.name} - {event.eventDate} ({event.location})
               </option>
             ))}
           </select>
@@ -121,7 +118,7 @@ export default function VolunteerMatchingForm({
         {selectedEvent && (
           <div className="p-4 bg-[#a5d9da] rounded-lg">
             <p className="text-sm text-black"><strong>Event:</strong> {selectedEvent.name}</p>
-            <p className="text-sm text-black"><strong>Date:</strong> {selectedEvent.event_date || selectedEvent.date}</p>
+            <p className="text-sm text-black"><strong>Date:</strong> {selectedEvent.eventDate}</p>
             <p className="text-sm text-black"><strong>Location:</strong> {selectedEvent.location}</p>
             <p className="text-sm text-black"><strong>Required Skills:</strong> {selectedEvent.requiredSkills.join(", ")}</p>
           </div>
