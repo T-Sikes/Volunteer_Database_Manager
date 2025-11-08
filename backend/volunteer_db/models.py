@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from datetime import timedelta
 
 #these classes represent names of tables that are translated by django to SQL
 
@@ -22,7 +21,7 @@ def validate_urgency(value):
         raise ValidationError(f"Urgency must be one of {valid_levels}.")
 
 def validate_future_date(value):
-    if value <= (timezone.now() - timedelta(days=1)):
+    if value < timezone.now():
         raise ValidationError("Event date cannot be in the past.")
     
 def validate_is_list(value):
@@ -159,10 +158,10 @@ class UserProfile(models.Model):
 # =========================
 class EventDetails(models.Model):
     event_name = models.CharField(max_length=200)
-    description = models.TextField(null=True, blank=True)
-    location = models.CharField(max_length=200, null=True, blank=True)
+    description = models.TextField(null=True)
+    location = models.CharField(max_length=200, null=True)
     required_skills = models.JSONField(validators=[validate_is_list], null=True)
-    urgency = models.CharField(max_length=50, validators=[validate_urgency], null=True, blank=True)
+    urgency = models.CharField(max_length=50, validators=[validate_urgency], null=True)
     address = models.CharField(max_length=200)
     city = models.CharField(max_length=50)
     state = models.CharField(
