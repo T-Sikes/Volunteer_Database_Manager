@@ -4,7 +4,7 @@ from rest_framework import status
 from .serializers import MatchRequestSerializer
 from datetime import datetime
 from volunteer_db.models import EventDetails, UserProfile, VolunteerHistory, UserCredentials, Notification
-from .serializers import VolunteerSerializer, EventSerializer, MatchRequestSerializer
+from .serializers import VolunteerSerializer, EventSerializer, MatchRequestSerializer, EventDetailsSerializer
 
 URGENCY_WEIGHT = {"low": 0, "medium": 1, "high": 2, "critical": 3}
 
@@ -30,6 +30,19 @@ def get_events(request):
     serializedData = EventDetailsSerializer(events, many=True).data
     return Response(serializedData)
 
+@api_view(["GET"])
+def get_volunteers(request):
+    profiles = UserProfile.objects.select_related("user").all()
+    data = [
+        {
+            "id": p.user.id,
+            "name": p.full_name,
+            "skills": p.skills if p.skills else []
+        }
+        for p in profiles
+    ]
+    return Response(data)
+
 @api_view(["POST"])
 def create_event(request):
     data = request.data
@@ -41,14 +54,15 @@ def create_event(request):
 
 @api_view(["PUT", "DELETE"])
 def update_or_delete_event(request, pk):
-    try :
+    try:
         event = EventDetails.objects.get(pk=pk)
     except EventDetails.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    
+
     if request.method == "DELETE":
         event.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
     elif request.method == "PUT":
         data = request.data
         serializer = EventDetailsSerializer(event, data=data)
@@ -56,16 +70,7 @@ def update_or_delete_event(request, pk):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(["GET"])
-def get_volunteers(request):
-    unique = {}
-    for v in volunteers:
-        key = v["name"].strip().lower()
-        if key not in unique:
-            unique[key] = {"name": v["name"], "skills": v.get("skills", [])}
-    return Response(list(unique.values()))
-
+matches = []
 @api_view(["POST"])
 def match_volunteers(request):
     serializer = MatchRequestSerializer(data=request.data)

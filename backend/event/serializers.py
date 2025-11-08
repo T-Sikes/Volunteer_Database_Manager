@@ -1,6 +1,34 @@
 from rest_framework import serializers
 from volunteer_db.models import EventDetails
 
+
+class VolunteerSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='full_name')
+    skills = serializers.ListField(source='skills')
+
+    class Meta:
+        model = UserProfile
+        fields = ['name', 'skills']
+
+
+class EventSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='event_name')
+    requiredSkills = serializers.ListField(source='required_skills')
+    eventDate = serializers.DateTimeField(source='start_date')
+    location = serializers.CharField()
+
+    class Meta:
+        model = EventDetails
+        fields = ['name', 'requiredSkills', 'eventDate', 'location']
+
+
+class EventDetailsSerializer(serializers.ModelSerializer):
+    """Used for creating, updating, and retrieving EventDetails records."""
+    class Meta:
+        model = EventDetails
+        fields = "__all__"
+
+
 class MatchRequestSerializer(serializers.Serializer):
     volunteerName = serializers.CharField(max_length=100)
     eventName = serializers.CharField(max_length=200, required=False, allow_blank=True)
@@ -15,9 +43,3 @@ class MatchRequestSerializer(serializers.Serializer):
         if not v:
             raise serializers.ValidationError("volunteerName cannot be blank")
         return v
-
-
-class EventDetailsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EventDetails
-        fields = "__all__"
