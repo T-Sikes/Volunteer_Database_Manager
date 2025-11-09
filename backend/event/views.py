@@ -2,77 +2,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
-from .serializers import EventDetailsSerializer
-from volunteer_db.models import EventDetails
-# Mock data
-matches = []
-notifications = []
-events = [
-    {
-        "id": 1,
-        "name": "Soup Kitchen",
-        "description": "Giving food to the homeless",
-        "location": "Some building",
-        "address": "1234 Main St.",
-        "city": "Houston",
-        "state": "TX",
-        "zipCode": "77204",
-        "requiredSkills": ["Event Planning", "Leadership", "Bilingual/Multilingual"],
-        "urgency": "medium",
-        "date": "2025-10-16"
-    },
-    {
-        "id": 2,
-        "name": "Plant Trees",
-        "description": "Planting trees for the environment :D",
-        "location": "Pleasant Park",
-        "address": "6767 Jefferson St.",
-        "city": "Houston",
-        "state": "TX",
-        "zipCode": "77203",
-        "requiredSkills": ["Event Planning", "First Aid", "Bilingual/Multilingual"],
-        "urgency": "low",
-        "date": "2025-10-15"
-    },
-    {
-        "id": 3,
-        "name": "Charity Run",
-        "description": "Raising money for a local cause",
-        "location": "Camp Nou",
-        "address": "500 Charity Rd.",
-        "city": "Houston",
-        "state": "TX",
-        "zipCode": "77001",
-        "requiredSkills": ["Event Planning", "First Aid", "Bilingual/Multilingual"],
-        "urgency": "high",
-        "date": "2025-11-15"
-    },
-    {
-    "id": 4,
-    "name": "Concert Fundraiser",
-    "description": "Music event to raise funds for food bank",
-    "location": "Houston Food Bank",
-    "address": "500 Donation Dr.",
-    "city": "Houston",
-    "state": "TX",
-    "zipCode": "77002",
-    "requiredSkills": ["Singer", "Event Planning", "Public Speaking"],
-    "urgency": "medium",
-    "date": "2025-12-21"
-    },
-]
+from volunteer_db.models import EventDetails, UserProfile, VolunteerHistory, UserCredentials, Notification
+from .serializers import VolunteerSerializer, EventSerializer, MatchRequestSerializer, EventDetailsSerializer
 
-volunteers = [
-    {"id": 1, "name": "John Doe", "skills": ["First Aid", "Bilingual/Multilingual"]},
-    {"id": 2, "name": "Eladio Carrion", "skills": ["Singer", "Bilingual/Multilingual"]},
-    {"id": 3, "name": "Jane Smith", "skills": ["Event Planning", "Public Speaking"]},
-    {"id": 4, "name": "Alice Martin", "skills": ["Event Planning", "Public Speaking"]},
-]
-URGENCY_WEIGHT = {
-    "low": 0,
-    "medium": 1,
-    "high": 2
-}
+URGENCY_WEIGHT = {"low": 0, "medium": 1, "high": 2, "critical": 3}
 
 def _normalize_list(lst):
     return [s.strip().lower() for s in lst]
@@ -93,20 +26,9 @@ def _score_event_for_volunteer(event, volunteer):
 
 @api_view(["GET"])
 def get_events(request):
-    db_events = EventDetails.objects.all()
-    data = [
-        {
-            "id": e.id,
-            "name": e.event_name,
-            "description": e.description,
-            "location": e.location,
-            "requiredSkills": e.required_skills if e.required_skills else [],
-            "urgency": e.urgency,
-            "eventDate": e.start_date.isoformat()
-        }
-        for e in db_events
-    ]
-    return Response(data)
+    events = EventDetails.objects.all()
+    serializedData = EventDetailsSerializer(events, many=True).data
+    return Response(serializedData)
 
 @api_view(["GET"])
 def get_volunteers(request):
@@ -124,31 +46,23 @@ def get_volunteers(request):
 @api_view(["POST"])
 def create_event(request):
     data = request.data
-    try:
-        new_event = EventDetails.objects.create(
-            event_name=data.get("name"),
-            description=data.get("description", ""),
-            location=data.get("location", ""),
-            required_skills=data.get("requiredSkills", []),
-            urgency=data.get("urgency", "low"),
-            start_date=data.get("eventDate"),
-            end_date=data.get("eventDate") 
-        )
-        return Response({"id": new_event.id, "message": "Event created."}, status=status.HTTP_201_CREATED)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+    serializer = EventDetailsSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["PUT", "DELETE"])
 def update_or_delete_event(request, pk):
-    try :
+    try:
         event = EventDetails.objects.get(pk=pk)
     except EventDetails.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    
+
     if request.method == "DELETE":
         event.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
     elif request.method == "PUT":
         data = request.data
         serializer = EventDetailsSerializer(event, data=data)
@@ -156,9 +70,7 @@ def update_or_delete_event(request, pk):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 matches = []
-
 @api_view(["POST"])
 def match_volunteers(request):
     serializer = MatchRequestSerializer(data=request.data)

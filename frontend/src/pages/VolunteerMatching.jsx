@@ -24,8 +24,17 @@ export default function VolunteerMatching() {
 
         const uniqueVolunteers = Array.from(new Map(volData.map(v => [v.name.toLowerCase(), v])).values());
 
+        const normalizedEvents = evData.map(e => ({
+          name: e.event_name,
+          requiredSkills: e.required_skills,
+          event_date: e.start_date,
+          location: e.location,
+          description: e.description,
+          urgency: e.urgency,
+        }));
+
         setVolunteers(uniqueVolunteers);
-        setEvents(evData);
+        setEvents(normalizedEvents);
         setMatches(Array.isArray(matchData) ? matchData : []);
       } catch (err) {
         console.error(err);
