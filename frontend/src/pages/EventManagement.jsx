@@ -2,19 +2,18 @@ import EventForm from "../components/EventForm.jsx"
 import { useState, useEffect } from "react"
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
-import { format } from "date-fns"
 
 function EventManagement() {
   
   let blankEvent = {
-    name: "",
+    event_name: "",
     description: "",
     location: "",
     address: "",
     city: "",
     state: "",
-    zipCode: "",
-    requiredSkills: "",
+    zip_code: "",
+    required_skills: "",
     urgency: ""
   }
   const [showEventForm, setShowEventForm] = useState(false)
@@ -27,7 +26,7 @@ function EventManagement() {
 
   const toggleEventForm = () => setShowEventForm(!showEventForm)
 
-  // Fetch events from backend on mount
+  // Fetch events from database on mount
   const fetchEvents = async() => {
     try{
       const response = await fetch("http://127.0.0.1:8000/event/")
@@ -38,7 +37,7 @@ function EventManagement() {
     }
   }
 
-  // Add event to database (when the database is implemented)
+  // Add event to database
   const addEvent = async (event) => {
     try{
       const response = await fetch("http://127.0.0.1:8000/event/create/",{
@@ -49,14 +48,14 @@ function EventManagement() {
         body: JSON.stringify(event.extendedProps.eventData)
       })
       const data = await response.json()
-      console.log(data)
+      event.extendedProps.eventData = data
       setEventsArray(prevState => [...prevState, event])
     } catch (err) {
       console.log(err)
     }
   }
 
-  // Update event in database (when the database is implemented)
+  // Update event in database
   const updateEvent = async (event, pk) => {
     try{
       const response = await fetch(`http://127.0.0.1:8000/event/${pk}/`,{
@@ -67,10 +66,11 @@ function EventManagement() {
         body: JSON.stringify(event.extendedProps.eventData)
       })
       const data = await response.json()
-      console.log(data)
+      event.extendedProps.eventData = data
       setEventsArray(prevState => {
         const modifiedArray = [...prevState]
-        modifiedArray[event.extendedProps.index] = event
+        const index = modifiedArray.findIndex(item => item.extendedProps.eventData.id == pk)
+        modifiedArray[index] = event
         return modifiedArray  
       })
     } catch (err) {
@@ -78,14 +78,31 @@ function EventManagement() {
     }
   }
 
+  // Delete event in database
+  const deleteEvent = async () => {
+    const pk = clickedEvent.extendedProps.eventData.id
+    try{
+      const response = await fetch(`http://127.0.0.1:8000/event/${pk}/`,{
+        method: "DELETE",
+      })
+
+      setEventsArray(prevState => prevState.filter(
+        event => event.extendedProps.eventData.id !== pk
+      ))
+    } catch (err) {
+      console.log(err)
+    }
+    toggleEventForm()
+  }
+
   // Process fetched events so they can be read by FullCalendar
   const parseEvents = (events) => {
     const parsedEvents = []
     for(let i = 0; i < events.length; i++) {
       parsedEvents.push({
-        title: events[i].name,
-        start: format(events[i].date, "yyyy-MM-dd"),
-        end: format(events[i].date, "yyyy-MM-dd"),
+        title: events[i].event_name,
+        start: events[i].start_date,
+        end: events[i].end_date,
         extendedProps: {
           eventData: {...events[i]}, 
           index: i
@@ -99,23 +116,21 @@ function EventManagement() {
   // Function for receiving data from EventForm component and updating the eventsArray being given to FullCalendar
   const getEventFormData = eventFormData => {
     const newEvent = clickedEvent ? false : true // Boolean that stores whether the user is adding a new event or updating an existing event
-    const arrayIndex = newEvent ? eventsArray.length : clickedEvent.extendedProps.index // Stores array index of event in eventsArray
+    
+    // Create event that can be properly read by FullCalendar
     const event = {
-      // These are properties specifically for FullCalender to read
-      title: eventFormData.name,
-      start: format(eventFormData.date, "yyyy-MM-dd"),
-      end: format(eventFormData.date, "yyyy-MM-dd"),
+      title: eventFormData.event_name,
+      start: eventFormData.start_date,
+      end: eventFormData.end_date,
       
       // extendedProps stores all of the event form data and its index in the eventsArray to be retrieved later.
       extendedProps: {
         eventData: {...eventFormData}, 
-        index: arrayIndex
       } 
     }
 
-    if (newEvent){
+    if (newEvent)
       addEvent(event)
-    }
     else
       updateEvent(event, event.extendedProps.eventData.id)
   }
@@ -125,8 +140,6 @@ function EventManagement() {
     setClickedEvent(info.event)
     toggleEventForm()
   }
-
-
 
   return (
     <div className="h-screen w-screen">
@@ -138,11 +151,19 @@ function EventManagement() {
           height="100%"
           expandRows={true}
           eventClick={eventClicked}
+          eventDisplay="block"
+          timeZone="local"
         />
         {/* Only show event form if showEventForm is true */}
         {showEventForm && 
           <div className="absolute inset-0 z-10 bg-[rgba(0,0,0,0.5)] h-screen w-screen">
-            <EventForm openedEvent={clickedEvent ? clickedEvent.extendedProps.eventData : blankEvent} submitEventForm={getEventFormData} closeEventForm={toggleEventForm}/>
+            <EventForm 
+            openedEvent={clickedEvent ? clickedEvent.extendedProps.eventData : blankEvent} 
+            submitEventForm={getEventFormData} 
+            closeEventForm={toggleEventForm}
+            deleteEvent={deleteEvent}
+            newEvent={clickedEvent ? false : true}
+            />
           </div>
         }
       </div>
