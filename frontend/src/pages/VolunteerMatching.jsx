@@ -84,12 +84,29 @@ export default function VolunteerMatching() {
     }
   };
 
-  const handleRemove = (index) => {
-    setMatches(prev => {
-      const updated = prev.filter((_, i) => i !== index);
-      return updated;
-    });
-    notifyInfo("Volunteer removed from list.");
+  const handleRemove = async (index) => {
+    const matchToDelete = matches[index];
+    if (!matchToDelete) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/events/delete-match/${encodeURIComponent(matchToDelete.volunteerName)}/${encodeURIComponent(matchToDelete.eventName)}/`,
+        { method: "DELETE" }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        notifyError(data.error || "Failed to delete match from backend.");
+        return;
+      }
+
+      setMatches(prev => prev.filter((_, i) => i !== index));
+      notifyInfo(data.status || "Volunteer removed from list.");
+    } catch (err) {
+      console.error(err);
+      notifyError("Error deleting match from backend.");
+    }
   };
 
   return (

@@ -208,3 +208,20 @@ class VolunteerHistory(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.event.event_name}"
+# =========================
+#  NOTIFICATION TABLE
+# =========================
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(
+        UserCredentials, 
+        on_delete=models.CASCADE, 
+        related_name="notifications"
+    )
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)
+
+    def __str__(self):
+        status = "Read" if self.read else "Unread"
+        return f"Notification to {self.recipient.username} - {status}"

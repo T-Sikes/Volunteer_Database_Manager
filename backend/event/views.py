@@ -71,6 +71,7 @@ def update_or_delete_event(request, pk):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 matches = []
+notifications = []
 @api_view(["POST"])
 def match_volunteers(request):
     serializer = MatchRequestSerializer(data=request.data)
@@ -83,13 +84,31 @@ def match_volunteers(request):
     posted_location = serializer.validated_data.get("location", "").strip()
     posted_required_skills = serializer.validated_data.get("requiredSkills", [])
 
+    profiles = UserProfile.objects.select_related("user").all()
+    volunteers = [
+        {"id": p.user.id, "name": p.full_name, "skills": p.skills if p.skills else []}
+        for p in profiles
+    ]
+
+    db_events = EventDetails.objects.all()
+    events = [
+        {
+            "id": e.id,
+            "name": e.event_name,
+            "date": e.start_date.isoformat() if e.start_date else "TBD",
+            "location": e.location or "Unknown",
+            "requiredSkills": e.required_skills if e.required_skills else [],
+            "urgency": e.urgency or "low"
+        }
+        for e in db_events
+    ]
+
     volunteer = next((v for v in volunteers if v["name"].strip().lower() == name.lower()), None)
     if not volunteer:
         return Response({"error": "Volunteer not found."}, status=status.HTTP_404_NOT_FOUND)
 
     if selected_event_name:
         event = next((e for e in events if e["name"].strip().lower() == selected_event_name.lower()), None)
-
         if not event:
             event = {
                 "id": max([e.get("id", 0) for e in events]) + 1,
@@ -97,33 +116,48 @@ def match_volunteers(request):
                 "date": posted_event_date or "TBD",
                 "location": posted_location or "Unknown",
                 "requiredSkills": posted_required_skills or [],
+                "urgency": "low"
             }
 
         match_entry = {
             "volunteerName": volunteer["name"],
             "eventName": event["name"],
-            "eventDate": event.get("date", event.get("eventDate", "")),
+            "eventDate": event.get("date", ""),
             "location": event.get("location", ""),
-            "matchedSkills": [
-                s for s in event.get("requiredSkills", [])
-                if s.strip().lower() in _normalize_list(volunteer.get("skills", []))
-            ],
+            "matchedSkills": [s for s in event.get("requiredSkills", []) if s.strip().lower() in _normalize_list(volunteer.get("skills", []))],
             "matchType": "manual",
             "timestamp": datetime.now().isoformat()
         }
 
-        existing_same = next((m for m in matches if m["volunteerName"].strip().lower() == volunteer["name"].strip().lower() and m["eventName"].strip().lower() == event["name"].strip().lower()), None)
+        existing_same = next(
+            (m for m in matches if m["volunteerName"].strip().lower() == volunteer["name"].strip().lower() and m["eventName"].strip().lower() == event["name"].strip().lower()),
+            None
+        )
         if not existing_same:
             prev = next((m for m in matches if m["volunteerName"].strip().lower() == volunteer["name"].strip().lower()), None)
             if prev:
                 matches.remove(prev)
             matches.append(match_entry)
-
             notifications.append({
                 "to": volunteer["name"],
                 "message": f"You were manually matched to event '{event['name']}' on {event.get('date','TBD')}",
                 "timestamp": datetime.now().isoformat()
             })
+
+        try:
+            user_obj = UserCredentials.objects.get(profile__full_name__iexact=volunteer["name"])
+            event_obj, _ = EventDetails.objects.get_or_create(
+                event_name=event["name"],
+                defaults={
+                    "start_date": event.get("date", None),
+                    "location": event.get("location", ""),
+                    "required_skills": event.get("requiredSkills", []),
+                    "urgency": event.get("urgency", "low")
+                }
+            )
+            VolunteerHistory.objects.update_or_create(user=user_obj, event=event_obj)
+        except Exception as e:
+            print("Failed to create VolunteerHistory:", e)
 
         return Response(match_entry, status=status.HTTP_200_OK)
 
@@ -144,8 +178,7 @@ def match_volunteers(request):
         "eventName": best_match["name"],
         "eventDate": best_match["date"],
         "location": best_match["location"],
-        "matchedSkills": [s for s in best_match.get("requiredSkills", [])
-                          if s.strip().lower() in _normalize_list(volunteer.get("skills", []))],
+        "matchedSkills": [s for s in best_match.get("requiredSkills", []) if s.strip().lower() in _normalize_list(volunteer.get("skills", []))],
         "matchType": "auto",
         "timestamp": datetime.now().isoformat()
     }
@@ -159,6 +192,21 @@ def match_volunteers(request):
         "message": f"You were automatically matched to event '{best_match['name']}' on {best_match['date']}",
         "timestamp": datetime.now().isoformat()
     })
+
+    try:
+        user_obj = UserCredentials.objects.get(profile__full_name__iexact=volunteer["name"])
+        event_obj, _ = EventDetails.objects.get_or_create(
+            event_name=best_match["name"],
+            defaults={
+                "start_date": best_match.get("date", None),
+                "location": best_match.get("location", ""),
+                "required_skills": best_match.get("requiredSkills", []),
+                "urgency": best_match.get("urgency", "low")
+            }
+        )
+        VolunteerHistory.objects.update_or_create(user=user_obj, event=event_obj)
+    except Exception as e:
+        print("Failed to create VolunteerHistory:", e)
 
     return Response(match_entry, status=status.HTTP_200_OK)
 @api_view(["GET"])
@@ -182,3 +230,40 @@ def send_notification(request):
         "timestamp": datetime.now().isoformat()
     })
     return Response({"status": "sent"}, status=status.HTTP_201_CREATED)
+
+@api_view(["DELETE"])
+def delete_match(request, volunteer_name, event_name):
+    volunteer_name = volunteer_name.strip()
+    event_name = event_name.strip()
+
+    db_deleted = False
+    try:
+        user = UserCredentials.objects.get(profile__full_name__iexact=volunteer_name)
+        event = EventDetails.objects.get(event_name__iexact=event_name)
+        history = VolunteerHistory.objects.get(user=user, event=event)
+        history.delete()
+        db_deleted = True
+    except (UserCredentials.DoesNotExist, EventDetails.DoesNotExist, VolunteerHistory.DoesNotExist):
+        pass  
+
+    global matches
+    match = next(
+        (m for m in matches
+         if m["volunteerName"].strip().lower() == volunteer_name.lower()
+         and m["eventName"].strip().lower() == event_name.lower()),
+        None
+    )
+    if match:
+        matches.remove(match)
+        return Response(
+            {"status": f"Match for {volunteer_name} in event '{event_name}' deleted."},
+            status=status.HTTP_200_OK
+        )
+
+    if db_deleted:
+        return Response(
+            {"status": f"Match for {volunteer_name} in event '{event_name}' deleted from database."},
+            status=status.HTTP_200_OK
+        )
+
+    return Response({"error": "Match not found."}, status=status.HTTP_404_NOT_FOUND)

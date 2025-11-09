@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from volunteer_db.models import EventDetails
+from volunteer_db.models import EventDetails, UserProfile
 
 
 class VolunteerSerializer(serializers.ModelSerializer):
