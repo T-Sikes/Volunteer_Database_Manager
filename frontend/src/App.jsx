@@ -6,6 +6,8 @@ import VolunteerMatching from "./pages/VolunteerMatching.jsx";
 import NotificationPage from "./pages/Notification.jsx";
 import NotificationSystem from "./components/NotificationSystem.jsx";
 import UserLogin from "./pages/UserLogin.jsx"
+import AdminPortalLayout from "./layouts/AdminPortalLayout.jsx";
+import VolunteerList from "./pages/VolunteerList.jsx";
 
 function App() {
   return (
@@ -13,12 +15,16 @@ function App() {
       <Router>
         <NotificationSystem />
         <Routes>
-          <Route path="/event-management" element={<EventManagement />} />
+          {/* <Route path="/event-management" element={<EventManagement />} /> */}
           <Route path="/profile/:username" element={<UserProfile />} />
           <Route path="/volunteer-history/" element={<VolunteerHistory />} />
           <Route path="/volunteer-matching" element={<VolunteerMatching />} />
           <Route path="/notifications" element={<NotificationPage />} />
           <Route path='/user-login' element={<UserLogin/>} />
+          <Route path="/portal/admin" element={<AdminPortalLayout />}>
+            <Route path="event-management" element={<EventManagement/>}/>
+            <Route path="volunteers" element={<VolunteerList/>}/>
+          </Route>
         </Routes>
       </Router>
     </div>
