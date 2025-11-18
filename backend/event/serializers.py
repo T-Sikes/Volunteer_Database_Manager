@@ -3,12 +3,9 @@ from volunteer_db.models import UserProfile, EventDetails
 
 
 class VolunteerSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source='full_name')
-    skills = serializers.ListField(source='skills')
-
     class Meta:
         model = UserProfile
-        fields = ['name', 'skills']
+        fields = "__all__"
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -44,8 +41,3 @@ class MatchRequestSerializer(serializers.Serializer):
             raise serializers.ValidationError("volunteerName cannot be blank")
         return v
 
-
-class EventDetailsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EventDetails
-        fields = "__all__"
