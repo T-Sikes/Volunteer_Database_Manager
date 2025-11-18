@@ -24,24 +24,56 @@ def _score_event_for_volunteer(event, volunteer):
         date_score = 0
     return matched_count * 10 + urgency_point + date_score
 
+
 @api_view(["GET"])
 def get_events(request):
-    events = EventDetails.objects.all()
-    serializedData = EventDetailsSerializer(events, many=True).data
-    return Response(serializedData)
+    try:
+        events = EventDetails.objects.all()
+        serializedData = EventDetailsSerializer(events, many=True).data
+        
+        return Response(
+            serializedData,
+            status=status.HTTP_200_OK
+        )
+
+    except Exception as e:
+        # Log the error if needed: print(e) or use logger
+        return Response(
+            {"status": "error", "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+# @api_view(["GET"])
+# def get_volunteers(request):
+#     profiles = UserProfile.objects.select_related("user").all()
+#     data = [
+#         {
+#             "id": p.user.id,
+#             "name": p.full_name,
+#             "skills": p.skills if p.skills else []
+#         }
+#         for p in profiles
+#     ]
+#     return Response(data)
 
 @api_view(["GET"])
 def get_volunteers(request):
-    profiles = UserProfile.objects.select_related("user").all()
-    data = [
-        {
-            "id": p.user.id,
-            "name": p.full_name,
-            "skills": p.skills if p.skills else []
-        }
-        for p in profiles
-    ]
-    return Response(data)
+    try:
+        volunteers = UserProfile.objects.select_related("user").all()
+        serializedData = VolunteerSerializer(volunteers, many=True).data
+        print(serializedData)
+        return Response(
+            serializedData,
+            status=status.HTTP_200_OK
+        )
+
+    except Exception as e:
+        # Log the error if needed: print(e) or use logger
+        return Response(
+            {"status": "error", "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @api_view(["POST"])
 def create_event(request):

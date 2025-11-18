@@ -4,7 +4,7 @@ const AdminPortalLayout = () => {
   return (
     <div>
       <div className="h-fit w-screen flex justify-center">
-        <div className="fixed top-0 z-10">
+        <div className="fixed top-0 z-5 bg-white w-screen">
           <h1 className="text-center">Admin Portal</h1>
           <nav>
             <div className="flex justify-around">
