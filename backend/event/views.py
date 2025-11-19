@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
 from volunteer_db.models import EventDetails, UserProfile, VolunteerHistory, UserCredentials, Notification
-from .serializers import VolunteerSerializer, EventSerializer, MatchRequestSerializer, EventDetailsSerializer
+from .serializers import VolunteerSerializer, EventSerializer, MatchRequestSerializer, EventDetailsSerializer, VolunteerHistorySerializer
 
 URGENCY_WEIGHT = {"low": 0, "medium": 1, "high": 2, "critical": 3}
 
@@ -233,3 +233,13 @@ def send_notification(request):
 
     Notification.objects.create(recipient=user, message=message)
     return Response({"status": "sent"}, status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
+def assign_volunteer(request):
+    data = request.data
+    serializer = VolunteerHistorySerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

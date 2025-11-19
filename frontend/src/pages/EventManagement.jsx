@@ -2,6 +2,7 @@ import EventForm from "../components/EventForm.jsx"
 import { useState, useEffect } from "react"
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
+import VolunteerAssignList from "../components/VolunteerAssignList.jsx"
 
 function EventManagement() {
   
@@ -19,12 +20,15 @@ function EventManagement() {
   const [showEventForm, setShowEventForm] = useState(false)
   const [eventsArray, setEventsArray] = useState([])
   const [clickedEvent, setClickedEvent] = useState({})
+  const [showVolunteerAssign, setShowVolunteerAssign] = useState(false)
 
   useEffect(() => {
     fetchEvents()
   }, [])
 
   const toggleEventForm = () => setShowEventForm(!showEventForm)
+
+  const toggleVolunteerAssign = () => setShowVolunteerAssign(!showVolunteerAssign)
 
   // Fetch events from database on mount
   const fetchEvents = async() => {
@@ -143,6 +147,29 @@ function EventManagement() {
 
   return (
     <div className="h-screen w-screen">
+      {/* Only show event form if showEventForm is true */}
+      {showEventForm && 
+        <div className="absolute inset-0 z-10 bg-[rgba(0,0,0,0.5)] h-screen w-screen">
+          <EventForm 
+            openedEvent={clickedEvent ? clickedEvent.extendedProps.eventData : blankEvent} 
+            submitEventForm={getEventFormData} 
+            closeEventForm={toggleEventForm}
+            deleteEvent={deleteEvent}
+            newEvent={clickedEvent ? false : true}
+            showVolunteerAssign={toggleVolunteerAssign}
+          />
+        </div>
+      }
+      {showVolunteerAssign &&
+        <div className="absolute inset-0 z-10 bg-[rgba(0,0,0,0.5)] h-screen w-screen">
+          <div className="absolute inset-0 m-auto h-fit w-fit">
+            <VolunteerAssignList
+              eventID={clickedEvent.extendedProps.eventData.id}
+              closeVolunteerAssign={toggleVolunteerAssign}
+            />
+          </div>
+        </div>
+      }
       <div className="h-[89%] w-screen px-5 relative z-0">
         <FullCalendar
           plugins={[ dayGridPlugin ]}
@@ -154,18 +181,6 @@ function EventManagement() {
           eventDisplay="block"
           timeZone="local"
         />
-        {/* Only show event form if showEventForm is true */}
-        {showEventForm && 
-          <div className="absolute inset-0 z-10 bg-[rgba(0,0,0,0.5)] h-screen w-screen">
-            <EventForm 
-            openedEvent={clickedEvent ? clickedEvent.extendedProps.eventData : blankEvent} 
-            submitEventForm={getEventFormData} 
-            closeEventForm={toggleEventForm}
-            deleteEvent={deleteEvent}
-            newEvent={clickedEvent ? false : true}
-            />
-          </div>
-        }
       </div>
       <div className="flex justify-center h-fit mt-3">
         <button 

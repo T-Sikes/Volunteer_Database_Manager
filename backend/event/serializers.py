@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from volunteer_db.models import UserProfile, EventDetails
+from volunteer_db.models import UserProfile, EventDetails, VolunteerHistory
 
 
 class VolunteerSerializer(serializers.ModelSerializer):
@@ -41,3 +41,7 @@ class MatchRequestSerializer(serializers.Serializer):
             raise serializers.ValidationError("volunteerName cannot be blank")
         return v
 
+class VolunteerHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VolunteerHistory
+        fields = "__all__"

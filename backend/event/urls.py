@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import get_events, get_volunteers, match_volunteers, get_all_matches, get_notifications, send_notification, create_event, update_or_delete_event, delete_match
+from .views import get_events, get_volunteers, match_volunteers, get_all_matches, get_notifications, send_notification, create_event, update_or_delete_event, delete_match, assign_volunteer
 
 urlpatterns = [
     path("", get_events, name="get_events"),
@@ -11,4 +11,5 @@ urlpatterns = [
     path("match/<str:volunteer_name>/", delete_match, name="delete_match"),
     path("notifications/", get_notifications),       
     path("send-notification/", send_notification),  
+    path("assign/", assign_volunteer, name="assign_volunteer")
 ]
