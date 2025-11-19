@@ -55,7 +55,12 @@ const VolunteerAssignList = (props) => {
             <div 
               key={volunteer.id} 
               className={`px-2 cursor-pointer ${selectedVolunteer == volunteer.user ? "bg-gray-200" : "hover:bg-gray-200 transition-colors"}`} 
-              onClick={() => setSelectedVolunteer(volunteer.user)}
+              onClick={() => {
+                if(selectedVolunteer == volunteer.user) 
+                  setSelectedVolunteer(null)
+                else
+                  setSelectedVolunteer(volunteer.user)
+              }}
             >
               <div className="flex justify-between">
                 <p className="text-lg">{volunteer.full_name} (ID: {volunteer.id}) </p>
