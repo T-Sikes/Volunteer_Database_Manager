@@ -56,6 +56,12 @@ function EventForm(props) {
     props.deleteEvent()
   }
 
+  const showVolunteerAssign = (e) => {
+    e.preventDefault()
+    props.showVolunteerAssign()
+    props.closeEventForm()
+  }
+
   // Show our hide message confirming that you want to delete an event
   const toggleConfirmMsg = () => setShowConfirmMsg(!showConfirmMsg)
   
@@ -260,6 +266,16 @@ function EventForm(props) {
                 <div></div>
               )}
             </div>
+            {!props.newEvent && 
+              <div className="flex w-full justify-center">
+                <button 
+                onClick={showVolunteerAssign} 
+                className="!bg-[#3fA2A5] text-white hover:!bg-[#203e3f]"
+                >
+                  Assign Volunteers
+                </button>
+              </div>
+            }
           </form>
         </div>
       }
