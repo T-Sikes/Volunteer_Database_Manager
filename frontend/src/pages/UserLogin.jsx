@@ -6,6 +6,7 @@ import password_icon from '../Assets/password.png';
 import Input from '../components/UserLogin/Input';
 import SignUpOrIn from '../components/UserLogin/SignUpOrIn';
 import { loginUser, registerUser } from '../components/UserLogin/Authentication';
+import { useNavigate } from "react-router-dom";
 
 function UserLogin() {
   const [action, setAction] = useState("Login");
@@ -15,6 +16,7 @@ function UserLogin() {
 
   const loginColor = "!bg-[#3fA2A5] hover:!bg-[#203e3f] text-white w-25 h-10 !rounded-full";
   const registerColor = "!bg-transparent hover:!bg-[#3fA2A5] text-[#3fA2A5] hover:text-white !font-semibold w-25 h-10 !rounded-full border !border-[#3fA2A5] !hover:border-transparent";
+  const navigate = useNavigate()
 
   const handleAuth = async () => {
     setMessage("");
@@ -31,6 +33,7 @@ function UserLogin() {
         localStorage.setItem('token', data.token);
         setMessage(`${action} successful! Token saved.`);
         console.log(`${action} response:`, data);
+        navigate("/portal/events")
       } else {
         setMessage(`Error: ${JSON.stringify(data)}`);
         console.log("Error response:", data);
