@@ -1,9 +1,10 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
 from volunteer_db.models import EventDetails, UserProfile, VolunteerHistory, UserCredentials, Notification
 from .serializers import VolunteerSerializer, EventSerializer, MatchRequestSerializer, EventDetailsSerializer, VolunteerHistorySerializer
+from rest_framework.permissions import IsAuthenticated
 
 URGENCY_WEIGHT = {"low": 0, "medium": 1, "high": 2, "critical": 3}
 
@@ -243,3 +244,25 @@ def assign_volunteer(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_user_events(request):
+    try:
+        if request.user.is_superuser:
+            events = VolunteerHistory.objects.all()
+        else:
+            events = VolunteerHistory.objects.filter(user=request.user)
+        serializedData = VolunteerHistorySerializer(events, many=True).data
+        
+        return Response(
+            serializedData,
+            status=status.HTTP_200_OK
+        )
+
+    except Exception as e:
+        # Log the error if needed: print(e) or use logger
+        return Response(
+            {"status": "error", "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

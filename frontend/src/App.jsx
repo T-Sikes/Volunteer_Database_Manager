@@ -8,6 +8,7 @@ import NotificationSystem from "./components/NotificationSystem.jsx";
 import UserLogin from "./pages/UserLogin.jsx"
 import AdminPortalLayout from "./layouts/AdminPortalLayout.jsx";
 import VolunteerList from "./pages/VolunteerList.jsx";
+import VolunteerPortalEvents from "./pages/VolunteerPortalEvents.jsx";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
             <Route path="event-management" element={<EventManagement/>}/>
             <Route path="volunteers" element={<VolunteerList/>}/>
           </Route>
+          <Route path="/portal/events" element={<VolunteerPortalEvents />}/>
         </Routes>
       </Router>
     </div>
