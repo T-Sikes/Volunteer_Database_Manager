@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import VolunteerAssignList from "../components/VolunteerAssignList.jsx"
+import AxiosInstance from "../components/AxiosInstance.jsx"
 
 function EventManagement() {
   
@@ -33,9 +34,9 @@ function EventManagement() {
   // Fetch events from database on mount
   const fetchEvents = async() => {
     try{
-      const response = await fetch("http://127.0.0.1:8000/event/")
-      const data = await response.json()
-      parseEvents(data)
+        const response = await AxiosInstance.get("event/")
+        const data = response.data
+        parseEvents(data)
     } catch (err) {
       console.log(err)
     }
@@ -44,52 +45,37 @@ function EventManagement() {
   // Add event to database
   const addEvent = async (event) => {
     try{
-      const response = await fetch("http://127.0.0.1:8000/event/create/",{
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(event.extendedProps.eventData)
-      })
-      const data = await response.json()
-      event.extendedProps.eventData = data
-      setEventsArray(prevState => [...prevState, event])
-    } catch (err) {
-      console.log(err)
-    }
+        const response = await AxiosInstance.post("event/create/", event.extendedProps.eventData)
+        const data = response.data
+        event.extendedProps.eventData = data
+        setEventsArray(prevState => [...prevState, event])
+      } catch (err) {
+        console.log(err)
+      }
   }
 
   // Update event in database
   const updateEvent = async (event, pk) => {
-    try{
-      const response = await fetch(`http://127.0.0.1:8000/event/${pk}/`,{
-        method: "PUT",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(event.extendedProps.eventData)
+      try{
+        const response = await AxiosInstance.put(`event/${pk}/`, event.extendedProps.eventData)
+        const data = response.data
+        event.extendedProps.eventData = data
+        setEventsArray(prevState => {
+          const modifiedArray = [...prevState]
+          const index = modifiedArray.findIndex(item => item.extendedProps.eventData.id == pk)
+          modifiedArray[index] = event
+          return modifiedArray  
       })
-      const data = await response.json()
-      event.extendedProps.eventData = data
-      setEventsArray(prevState => {
-        const modifiedArray = [...prevState]
-        const index = modifiedArray.findIndex(item => item.extendedProps.eventData.id == pk)
-        modifiedArray[index] = event
-        return modifiedArray  
-      })
-    } catch (err) {
-      console.log(err)
-    }
+      } catch (err) {
+        console.log(err)
+      }
   }
 
   // Delete event in database
   const deleteEvent = async () => {
     const pk = clickedEvent.extendedProps.eventData.id
     try{
-      const response = await fetch(`http://127.0.0.1:8000/event/${pk}/`,{
-        method: "DELETE",
-      })
-
+      const response = await AxiosInstance.delete(`event/${pk}/`)
       setEventsArray(prevState => prevState.filter(
         event => event.extendedProps.eventData.id !== pk
       ))
