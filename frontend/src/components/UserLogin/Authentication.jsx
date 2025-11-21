@@ -1,11 +1,11 @@
 export const loginUser = async (email, password) => {
   try {
-    const response = await fetch("http://127.0.0.1:8000/user_login/login/", {
+    const response = await fetch("http://127.0.0.1:8000/user_login/login/", { 
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username: email, password }),
+      body: JSON.stringify({ email, password }),
     });
 
     if (!response.ok) {
@@ -23,12 +23,12 @@ export const loginUser = async (email, password) => {
 
 export const registerUser = async (email, password) => {
   try {
-    const response = await fetch("http://127.0.0.1:8000/user_login/signup/", {
+    const response = await fetch("http://127.0.0.1:8000/user_login/signup/", { 
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username: email, email, password }),
+      body: JSON.stringify({ email, password }),
     });
 
     if (!response.ok) {
