@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from volunteer_db.models import UserProfile, EventDetails, VolunteerHistory
-from backend.user.serializers import UserProfileSerializerBasic
+from user.serializers import UserProfileSerializerBasic
 
 
 class VolunteerSerializer(serializers.ModelSerializer):
