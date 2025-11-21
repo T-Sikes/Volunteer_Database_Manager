@@ -7,18 +7,6 @@ class VolunteerSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = "__all__"
 
-
-class EventSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source='event_name')
-    requiredSkills = serializers.ListField(source='required_skills')
-    eventDate = serializers.DateTimeField(source='start_date')
-    location = serializers.CharField()
-
-    class Meta:
-        model = EventDetails
-        fields = ['name', 'requiredSkills', 'eventDate', 'location']
-
-
 class EventDetailsSerializer(serializers.ModelSerializer):
     """Used for creating, updating, and retrieving EventDetails records."""
     class Meta:
@@ -42,6 +30,8 @@ class MatchRequestSerializer(serializers.Serializer):
         return v
 
 class VolunteerHistorySerializer(serializers.ModelSerializer):
+    event_details = EventDetailsSerializer(source="event", read_only=True)
+
     class Meta:
         model = VolunteerHistory
         fields = "__all__"

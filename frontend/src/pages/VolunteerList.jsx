@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
+import AxiosInstance from "../components/AxiosInstance"
 
 const VolunteerList = () => {
   const [volunteers, setVolunteers] = useState([])
   const [showInfo, setShowInfo] = useState(false)
   const [selectedVolunteer, setSelectedVolunteer] = useState({})
 
+  // Show inforrmation for a specific volunteer
   const toggleInfo = id => {
     if(!showInfo) {
       const index = volunteers.findIndex(volunteer => volunteer.id == id)
@@ -19,8 +21,8 @@ const VolunteerList = () => {
 
   const fetchVolunteers = async() => {
     try{
-      const response = await fetch("http://127.0.0.1:8000/event/volunteers/")
-      const data = await response.json()
+      const response = await AxiosInstance.get("event/volunteers/")
+      const data = response.data
       setVolunteers(data)
     } catch (err) {
       console.log(err)

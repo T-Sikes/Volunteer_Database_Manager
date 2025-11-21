@@ -13,5 +13,5 @@ urlpatterns = [
     path("send-notification/", send_notification),  
     path("assign/", assign_volunteer, name="assign_volunteer"),
     path("assigned-events/", get_user_events, name="get_user_events" ),
-    path("api-auth/", include("rest_framework.urls"))
+    path("api-auth/", include("rest_framework.urls")) # For being able to log in and log out when testing API calls using the Django Rest Framework UI
 ]

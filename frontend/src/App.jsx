@@ -22,17 +22,20 @@ function App() {
           <Route path="/volunteer-matching" element={<VolunteerMatching />} />
           <Route path="/notifications" element={<NotificationPage />} />
           <Route path="/user-login" element={<UserLogin />} />
+
+          {/* Roots for volunteer portal */}
           <Route path="/portal/" element={<VolunteerPortalLayout />}>
             <Route path="profile" element={<UserProfile/>}/>
             <Route path="events" element={<VolunteerPortalEvents/>}/>
             <Route path="volunteer-history" element={<VolunteerHistory/>}/>
           </Route>
-          <Route path="/portal/events" element={<VolunteerPortalEvents />}/>
+
+          {/* Routes for admin portal */}
           <Route path="/portal/admin" element={<AdminPortalLayout />}>
             <Route path="event-management" element={<EventManagement/>}/>
             <Route path="volunteers" element={<VolunteerList/>}/>
           </Route>
-          <Route path="/portal/events" element={<VolunteerPortalEvents />}/>
+          
         </Routes>
       </Router>
     </div>

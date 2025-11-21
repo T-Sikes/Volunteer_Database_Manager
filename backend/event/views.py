@@ -3,8 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
 from volunteer_db.models import EventDetails, UserProfile, VolunteerHistory, UserCredentials, Notification
-from .serializers import VolunteerSerializer, EventSerializer, MatchRequestSerializer, EventDetailsSerializer, VolunteerHistorySerializer
+from .serializers import VolunteerSerializer, MatchRequestSerializer, EventDetailsSerializer, VolunteerHistorySerializer
 from rest_framework.permissions import IsAuthenticated
+
+# add "@permission_classes([IsAuthenticated])" above your endpoints if a user needs to be logged in to make this API call. More often than not, they will need to be
 
 URGENCY_WEIGHT = {"low": 0, "medium": 1, "high": 2, "critical": 3}
 
@@ -27,6 +29,7 @@ def _score_event_for_volunteer(event, volunteer):
 
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def get_events(request):
     try:
         events = EventDetails.objects.all()
@@ -59,11 +62,11 @@ def get_events(request):
 #     return Response(data)
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def get_volunteers(request):
     try:
         volunteers = UserProfile.objects.select_related("user").all()
         serializedData = VolunteerSerializer(volunteers, many=True).data
-        print(serializedData)
         return Response(
             serializedData,
             status=status.HTTP_200_OK
@@ -77,6 +80,7 @@ def get_volunteers(request):
         )
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def create_event(request):
     data = request.data
     serializer = EventDetailsSerializer(data=data)
@@ -86,6 +90,7 @@ def create_event(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["PUT", "DELETE"])
+@permission_classes([IsAuthenticated])
 def update_or_delete_event(request, pk):
     try:
         event = EventDetails.objects.get(pk=pk)
@@ -103,6 +108,8 @@ def update_or_delete_event(request, pk):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
 matches = []
 @api_view(["POST"])
 def match_volunteers(request):
@@ -237,6 +244,7 @@ def send_notification(request):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def assign_volunteer(request):
     data = request.data
     serializer = VolunteerHistorySerializer(data=data)
@@ -249,10 +257,12 @@ def assign_volunteer(request):
 @permission_classes([IsAuthenticated])
 def get_user_events(request):
     try:
+        # If admin, get all the events assigned to at least 1 volunteer
         if request.user.is_superuser:
-            events = VolunteerHistory.objects.all()
+            events = VolunteerHistory.objects.select_related('event').all()
+        # If volunteer, only get events specifically asigned to that volunteer
         else:
-            events = VolunteerHistory.objects.filter(user=request.user)
+            events = VolunteerHistory.objects.filter(user=request.user).select_related('event')
         serializedData = VolunteerHistorySerializer(events, many=True).data
         
         return Response(

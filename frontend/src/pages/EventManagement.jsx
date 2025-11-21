@@ -29,7 +29,7 @@ function EventManagement() {
 
   const toggleEventForm = () => setShowEventForm(!showEventForm)
 
-  const toggleVolunteerAssign = () => setShowVolunteerAssign(!showVolunteerAssign)
+  const toggleVolunteerAssign = () => setShowVolunteerAssign(!showVolunteerAssign) // Toggle pop up for assigning volunteers
 
   // Fetch events from database on mount
   const fetchEvents = async() => {
@@ -146,6 +146,7 @@ function EventManagement() {
           />
         </div>
       }
+      {/* Volunteer assignment pop up */}
       {showVolunteerAssign &&
         <div className="absolute inset-0 z-10 bg-[rgba(0,0,0,0.5)] h-screen w-screen">
           <div className="absolute inset-0 m-auto h-fit w-fit">

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import AxiosInstance from './AxiosInstance'
 
 const VolunteerAssignList = (props) => {
   const [volunteers, setVolunteers] = useState([])
@@ -21,8 +22,8 @@ const VolunteerAssignList = (props) => {
 
   const fetchVolunteers = async() => {
     try{
-      const response = await fetch("http://127.0.0.1:8000/event/volunteers/")
-      const data = await response.json()
+      const response = await AxiosInstance.get("event/volunteers/")
+      const data = response.data
       setVolunteers(data)
     } catch (err) {
       console.log(err)
@@ -31,13 +32,7 @@ const VolunteerAssignList = (props) => {
 
   const assignVolunteer = async (eventID, volunteerID) => {
     try{
-      const response = await fetch("http://127.0.0.1:8000/event/assign/",{
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({event: eventID, user: volunteerID})
-      })
+      const response = await AxiosInstance.post("event/assign/", {event: eventID, user: volunteerID})
       setIsAssignedMap(prevState => { return {...prevState, [volunteerID]: true}})
       setSelectedVolunteer(null)
     } catch (err) {
