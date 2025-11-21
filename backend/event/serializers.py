@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from volunteer_db.models import UserProfile, EventDetails, VolunteerHistory
+from backend.user.serializers import UserProfileSerializerBasic
 
 
 class VolunteerSerializer(serializers.ModelSerializer):
@@ -31,6 +32,7 @@ class MatchRequestSerializer(serializers.Serializer):
 
 class VolunteerHistorySerializer(serializers.ModelSerializer):
     event_details = EventDetailsSerializer(source="event", read_only=True)
+    user_profile = UserProfileSerializerBasic(source="user_profile", read_only=True)
 
     class Meta:
         model = VolunteerHistory
