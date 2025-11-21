@@ -32,7 +32,7 @@ class MatchRequestSerializer(serializers.Serializer):
 
 class VolunteerHistorySerializer(serializers.ModelSerializer):
     event_details = EventDetailsSerializer(source="event", read_only=True)
-    user_profile = UserProfileSerializerBasic(source="user_profile", read_only=True)
+    user_profile_details = UserProfileSerializerBasic(source="user_profile", read_only=True)
 
     class Meta:
         model = VolunteerHistory

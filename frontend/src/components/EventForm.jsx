@@ -67,7 +67,7 @@ function EventForm(props) {
   
 
   return (
-    <div className="flex justify-center items-center h-screen w-screen">
+    <div> {/*className="flex justify-center items-center h-screen w-screen"*/}
       {showConfirmMsg && 
         <div className="bg-white border-gray-500 border-2 h-fit w-fit p-10 rounded-lg">
           <p className="text-xl font-bold">Are you sure you want to delete this event?: {eventData.event_name}</p>

@@ -281,9 +281,9 @@ def get_user_events(request):
     
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def get_volunteers_for_event(request, pk):
+def get_volunteers_for_event(request, event_id):
     try:
-        volunteers = VolunteerHistory.objects.filter(event=pk).select_related('user_profile')
+        volunteers = VolunteerHistory.objects.filter(event=event_id).select_related('user_profile')
         serializedData = VolunteerHistorySerializer(volunteers, many=True).data
         
         return Response(

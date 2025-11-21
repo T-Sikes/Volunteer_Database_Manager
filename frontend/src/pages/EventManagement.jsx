@@ -22,6 +22,7 @@ function EventManagement() {
   const [eventsArray, setEventsArray] = useState([])
   const [clickedEvent, setClickedEvent] = useState({})
   const [showVolunteerAssign, setShowVolunteerAssign] = useState(false)
+  const [volunteersForEvent, setVolunteersForEvent] = useState([])
 
   useEffect(() => {
     fetchEvents()
@@ -37,6 +38,19 @@ function EventManagement() {
         const response = await AxiosInstance.get("event/")
         const data = response.data
         parseEvents(data)
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  // Fetch volunteers assigned to an event
+  const fetchVolunteersForEvent = async(event_id) => {
+    try{
+      const response = await AxiosInstance.get(`event/${event_id}/volunteers/`)
+      const data = response.data
+      setVolunteersForEvent(data.map(x => x.user_profile_details))
+      console.log(data.map(x => x.user_profile_details))
+      // console.log(data)
     } catch (err) {
       console.log(err)
     }
@@ -128,6 +142,7 @@ function EventManagement() {
   // Function for showing showing event form when an event is clicked
   const eventClicked = info => {
     setClickedEvent(info.event)
+    fetchVolunteersForEvent(info.event.extendedProps.eventData.id)
     toggleEventForm()
   }
 
@@ -135,15 +150,29 @@ function EventManagement() {
     <div className="h-screen w-screen">
       {/* Only show event form if showEventForm is true */}
       {showEventForm && 
-        <div className="absolute inset-0 z-10 bg-[rgba(0,0,0,0.5)] h-screen w-screen">
-          <EventForm 
-            openedEvent={clickedEvent ? clickedEvent.extendedProps.eventData : blankEvent} 
-            submitEventForm={getEventFormData} 
-            closeEventForm={toggleEventForm}
-            deleteEvent={deleteEvent}
-            newEvent={clickedEvent ? false : true}
-            showVolunteerAssign={toggleVolunteerAssign}
-          />
+        <div className="flex absolute justify-center items-center top-0 left-0 z-10 bg-[rgba(0,0,0,0.5)] min-h-full min-w-full">
+          <div className="flex items-start">
+            <EventForm 
+              openedEvent={clickedEvent ? clickedEvent.extendedProps.eventData : blankEvent} 
+              submitEventForm={getEventFormData} 
+              closeEventForm={toggleEventForm}
+              deleteEvent={deleteEvent}
+              newEvent={clickedEvent ? false : true}
+              showVolunteerAssign={toggleVolunteerAssign}
+            />
+            <div className="bg-white border-gray-500 border-2 h-fit w-fit p-10 rounded-lg"> 
+              <h2 className="text-2xl text-center">Assigned Volunteers</h2>
+              {volunteersForEvent.map(volunteer => (
+                <div 
+                  key={volunteer.id} 
+                  className="px-2" 
+                >
+                  <p className="text-lg">{volunteer.full_name} (ID: {volunteer.id})</p>
+                  <hr/>
+                </div>
+                ))}
+            </div>
+          </div>
         </div>
       }
       {/* Volunteer assignment pop up */}
