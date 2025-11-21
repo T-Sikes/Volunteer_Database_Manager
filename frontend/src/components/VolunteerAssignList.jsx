@@ -7,19 +7,14 @@ const VolunteerAssignList = (props) => {
   const [selectedVolunteer, setSelectedVolunteer] = useState({})
   const [eventID, setEventID] = useState(props.eventID)
   const [isAssignedMap, setIsAssignedMap] = useState({})
-
-  const toggleInfo = id => {
-    if(!showInfo) {
-      const index = volunteers.findIndex(volunteer => volunteer.id == id)
-      setSelectedVolunteer(volunteers[index])
-    }
-    setShowInfo(!showInfo)
-  }
+  const [volunteersForEvent, setVolunteersForEvent] = useState([])
 
   useEffect(() => {
     fetchVolunteers()
+    fetchVolunteersForEvent(eventID)
   },[])
 
+  // Fetch all volunteers
   const fetchVolunteers = async() => {
     try{
       const response = await AxiosInstance.get("event/volunteers/")
@@ -30,10 +25,27 @@ const VolunteerAssignList = (props) => {
     }
   }
 
-  const assignVolunteer = async (eventID, volunteerID) => {
+  // Fetch volunteers assigned to this event
+  const fetchVolunteersForEvent = async(event_id) => {
     try{
-      const response = await AxiosInstance.post("event/assign/", {event: eventID, user: volunteerID})
-      setIsAssignedMap(prevState => { return {...prevState, [volunteerID]: true}})
+      const response = await AxiosInstance.get(`event/${event_id}/volunteers/`)
+      const data = response.data
+      const ids = data.map(x => x.user_profile_details.id)
+      const mp = {}
+      ids.forEach((id) => {
+        mp[id] = true
+      })
+      setIsAssignedMap(mp)
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  const assignVolunteer = async (eventID, sv) => {
+    console.log(sv)
+    try{
+      const response = await AxiosInstance.post("event/assign/", {event: eventID, user: sv.user, user_profile: sv.user_profile})
+      setIsAssignedMap(prevState => { return {...prevState, [sv.user_profile]: true}})
       setSelectedVolunteer(null)
     } catch (err) {
       console.log(err)
@@ -49,17 +61,24 @@ const VolunteerAssignList = (props) => {
           {volunteers.map(volunteer => (
             <div 
               key={volunteer.id} 
-              className={`px-2 cursor-pointer ${selectedVolunteer == volunteer.user ? "bg-gray-200" : "hover:bg-gray-200 transition-colors"}`} 
+              className={`px-2 cursor-pointer ${!selectedVolunteer ? "hover:bg-gray-200 transition-colors" : (selectedVolunteer.user_profile == volunteer.id ? "bg-gray-200" : "hover:bg-gray-200 transition-colors")}`} 
               onClick={() => {
-                if(selectedVolunteer == volunteer.user) 
-                  setSelectedVolunteer(null)
-                else
-                  setSelectedVolunteer(volunteer.user)
+                if(selectedVolunteer){
+                  if(selectedVolunteer.user_profile == volunteer.id){ 
+                    setSelectedVolunteer(null)
+                    return
+                  }
+                }
+                setSelectedVolunteer({user: volunteer.user, user_profile: volunteer.id})
               }}
             >
-              <div className="flex justify-between">
-                <p className="text-lg">{volunteer.full_name} (ID: {volunteer.id}) </p>
-                {isAssignedMap[volunteer.user] && 
+              <div className="flex justify-between text-lg">
+                <div>
+                  <p>{volunteer.full_name} (ID: {volunteer.id}) </p>
+                  <p><span className="font-medium">Skills:</span> {volunteer.skills}</p>
+                  <p><span className="font-medium">Location:</span> {volunteer.city}, {volunteer.state}</p>
+                </div>
+                {(isAssignedMap[volunteer.id] ?? false) && 
                   <p className="text-green-600"> Assigned </p>
                 }
               </div>

@@ -5,6 +5,8 @@ from datetime import datetime
 from volunteer_db.models import EventDetails, UserProfile, VolunteerHistory, UserCredentials, Notification
 from .serializers import VolunteerSerializer, MatchRequestSerializer, EventDetailsSerializer, VolunteerHistorySerializer
 from rest_framework.permissions import IsAuthenticated
+from django.core.exceptions import PermissionDenied
+
 
 # add "@permission_classes([IsAuthenticated])" above your endpoints if a user needs to be logged in to make this API call. More often than not, they will need to be
 
@@ -264,6 +266,25 @@ def get_user_events(request):
         else:
             events = VolunteerHistory.objects.filter(user=request.user).select_related('event')
         serializedData = VolunteerHistorySerializer(events, many=True).data
+        
+        return Response(
+            serializedData,
+            status=status.HTTP_200_OK
+        )
+
+    except Exception as e:
+        # Log the error if needed: print(e) or use logger
+        return Response(
+            {"status": "error", "message": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_volunteers_for_event(request, event_id):
+    try:
+        volunteers = VolunteerHistory.objects.filter(event=event_id).select_related('user_profile')
+        serializedData = VolunteerHistorySerializer(volunteers, many=True).data
         
         return Response(
             serializedData,
