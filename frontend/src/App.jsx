@@ -10,6 +10,7 @@ import AdminPortalLayout from "./layouts/AdminPortalLayout.jsx";
 import VolunteerList from "./pages/VolunteerList.jsx";
 import VolunteerPortalEvents from "./pages/VolunteerPortalEvents.jsx";
 import Home from "./pages/Home.jsx";
+import VolunteerPortalLayout from "./layouts/VolunteerPortalLayout.jsx";
 
 function App() {
   return (
@@ -19,10 +20,14 @@ function App() {
         <Routes>
           <Route path="/" element={<Home/>} />
           <Route path="/profile/:username" element={<UserProfile />} />
-          <Route path="/volunteer-history/" element={<VolunteerHistory />} />
           <Route path="/volunteer-matching" element={<VolunteerMatching />} />
           <Route path="/notifications" element={<NotificationPage />} />
-          <Route path='/user-login' element={<UserLogin/>} />
+          <Route path="/portal/" element={<VolunteerPortalLayout />}>
+            <Route path="user-profile" element={<UserProfile/>}/>
+            <Route path="events" element={<VolunteerPortalEvents/>}/>
+            <Route path="volunteer-history" element={<VolunteerHistory/>}/>
+          </Route>
+          <Route path="/portal/events" element={<VolunteerPortalEvents />}/>
           <Route path="/portal/admin" element={<AdminPortalLayout />}>
             <Route path="event-management" element={<EventManagement/>}/>
             <Route path="volunteers" element={<VolunteerList/>}/>

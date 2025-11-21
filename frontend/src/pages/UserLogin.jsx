@@ -33,7 +33,7 @@ function UserLogin() {
         localStorage.setItem('token', data.token);
         setMessage(`${action} successful! Token saved.`);
         console.log(`${action} response:`, data);
-        navigate("/portal/events")
+        navigate("/portal/user-profile")
       } else {
         setMessage(`Error: ${JSON.stringify(data)}`);
         console.log("Error response:", data);
