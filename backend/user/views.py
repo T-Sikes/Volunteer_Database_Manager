@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from volunteer_db.models import UserProfile, VolunteerHistory, EventDetails, UserCredentials
 from .serializers import UserProfileSerializer, VolunteerRecordSerializer
@@ -93,21 +94,69 @@ HARD_CODED_EVENTS = [
 @api_view(['GET'])
 def get_user_profile(request, username):
     user = get_object_or_404(UserCredentials, username=username)
-    profile = get_object_or_404(UserProfile, user=user)
-    serializer = UserProfileSerializer(profile)
-    return Response(serializer.data)
+    
+    try:
+        profile = UserProfile.objects.get(user=user)
+        serializer = UserProfileSerializer(profile)
+        return Response(serializer.data)
+    except UserProfile.DoesNotExist:
+        # Return empty profile structure if doesn't exist
+        return Response({
+            "full_name": "",
+            "address1": "", 
+            "address2": "",
+            "city": "",
+            "state": "",
+            "zip_code": "",
+            "skills": [],
+            "preferences": "",
+            "availability": []
+        })
 
 @api_view(['POST'])
 def save_user_profile(request, username):
     user = get_object_or_404(UserCredentials, username=username)
-    profile = get_object_or_404(UserProfile, user=user)
-
-    serializer = UserProfileSerializer(profile, data = request.data)
+    
+    try:
+        profile = UserProfile.objects.get(user=user)
+        serializer = UserProfileSerializer(
+            profile, 
+            data=request.data,
+            context={'user': user}  # Pass user in context for the serializer
+        )
+    except UserProfile.DoesNotExist:
+        # Create new profile if it doesn't exist
+        serializer = UserProfileSerializer(
+            data=request.data,
+            context={'user': user}  # Pass user in context for creation
+        )
+    
     if serializer.is_valid():
-        serializer.save()
+        profile = serializer.save()
         return Response({"status": "saved", "data": serializer.data})
     else:
+        print("Serializer errors:", serializer.errors)
         return Response(serializer.errors, status=400)
+
+#--------------------------
+# current user endpoint
+#--------------------------
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    """
+    Get the current logged-in user's basic info
+    """
+    user = request.user
+    return Response({
+        'username': user.username,
+        'email': user.email,
+        'id': user.id,
+        # Add any other user fields you need
+    })
+
+
     
 #---------------------------
 # Volunteer History Endpoint
@@ -125,10 +174,19 @@ def save_volunteer_record(request, username):
     user = get_object_or_404(UserCredentials, username=username)
     
     event_id = request.data.get("event_id")
-    event = get_object_or_404(EventDetails, id=event_id)
+    if not event_id:
+        return Response({"error": "event_id is required"}, status=400)
+    
+    try:
+        event = get_object_or_404(EventDetails, id=event_id)
+    except:
+        return Response({"error": "Event not found"}, status=400)
     
     # Map frontend fields to model fields
     hours = request.data.get("hours", 0)
+    if hours is None or hours <= 0:
+        return Response({"error": "Hours must be greater than 0"}, status=400)
+
     status = request.data.get("status", "pending")
     
     record = VolunteerHistory.objects.create(

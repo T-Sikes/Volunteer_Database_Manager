@@ -145,6 +145,7 @@ class UserProfile(models.Model):
     skills = models.JSONField(validators=[validate_is_list], null=True)
     preferences = models.TextField(blank=True)
     availability = models.CharField(max_length=100)
+    availability_json = models.JSONField(default=dict, blank=True)  # ADD THIS NEW FIELD
 
     def __str__(self):
         return f"{self.full_name} ({self.user.username})"

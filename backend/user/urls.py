@@ -2,11 +2,14 @@ from django.urls import path
 from .views import (
     get_user_profile, save_user_profile,
     get_volunteer_history, save_volunteer_record,
-    get_events
+    get_events, get_current_user
 )
 
 #endpoint definitons
 urlpatterns = [
+    # Current user endpoint (ADD THIS)
+    path('current/', get_current_user, name='get_current_user'),
+
     # User profile
     path('profile/<str:username>/', get_user_profile),
     path('profile/<str:username>/save/', save_user_profile),

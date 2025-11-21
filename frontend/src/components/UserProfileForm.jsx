@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
 function UserProfileForm({ submitProfile, closeForm, initialData }) {
+  //------------- form state -------------
   const [fullName, setFullName] = useState(initialData?.full_name || '');
   const [address1, setAddress1] = useState(initialData?.address1 || '');
   const [address2, setAddress2] = useState(initialData?.address2 || '');
@@ -9,9 +10,22 @@ function UserProfileForm({ submitProfile, closeForm, initialData }) {
   const [zip, setZip] = useState(initialData?.zip_code || '');
   const [skills, setSkills] = useState(initialData?.skills || []);
   const [preferences, setPreferences] = useState(initialData?.preferences || '');
-  const [availability, setAvailability] = useState(initialData?.availability || []);
+  const [availability, setAvailability] = useState(() => {
+  if (initialData?.availability) {
+    return initialData.availability;
+  }
+  return {
+    monday: { available: false, start: '09:00', end: '17:00' },
+    tuesday: { available: false, start: '09:00', end: '17:00' },
+    wednesday: { available: false, start: '09:00', end: '17:00' },
+    thursday: { available: false, start: '09:00', end: '17:00' },
+    friday: { available: false, start: '09:00', end: '17:00' },
+    saturday: { available: false, start: '09:00', end: '17:00' },
+    sunday: { available: false, start: '09:00', end: '17:00' }
+  };
+});
   const [skillsDropdownOpen, setSkillsDropdownOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState('');
+ 
 
 useEffect(() => {
     if (initialData) {
@@ -23,7 +37,6 @@ useEffect(() => {
       setZip(initialData.zip_code || '');
       setSkills(initialData.skills || []);
       setPreferences(initialData.preferences || '');
-      setAvailability(initialData.availability || []);
     }
   }, [initialData]);
 
@@ -67,8 +80,9 @@ const allStates = [
     if (!state) return alert('State is required');
     if (!zip || zip.length < 5) return alert('Zip code must be at least 5 characters');
     if (skills.length === 0) return alert('Select at least one skill');
-    if (availability.length === 0) return alert('Select at least one availability date');
 
+    const availableDays = Object.values(availability).filter(day => day.available).length;
+    if (availableDays === 0) return alert('Select at least one available day');
 
     // send data to parent
     submitProfile({ full_name: fullName, address1, address2, city, state, zip_code: zip, skills, preferences, availability});
@@ -76,7 +90,7 @@ const allStates = [
 
   const handleCancel = (e) => {
     e.preventDefault();
-    props.closeForm();
+    closeForm();
   }
 
   const handleSkillsChange = (e) => {
@@ -84,16 +98,10 @@ const allStates = [
     setSkills(value);
   }
 
-   const handleAvailabilityChange = (e) => {
-    const value = e.target.value; // YYYY-MM-DD
-    if (!availability.includes(value)) {
-      setAvailability([...availability, value]);
-    }
-  }
-
+ 
 
   return (
-  <div className='flex justify-center items-start min-h-screen bg-gray-100 w-screen py-10' >
+  <div className='flex justify-center items-start min-h-screen bg-gray-100 w-screen py-10 pt-20'>
     <form className="bg-white p-6 rounded-lg shadow-md w-96 flex flex-col space-y-4">
         <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">User Profile</h1>
 
@@ -221,37 +229,66 @@ const allStates = [
           />
         </div>
 
-        {/* Availability date picker (multiple dates allowed) */}
+                {/* Weekly Availability */}
         <div className="flex flex-col">
-        <label className="mb-1 font-medium text-gray-700">Availability*</label>
-        <div className="flex space-x-2 mb-2">
-            <input 
-            type="date"
-            value={selectedDate}
-            onChange={e => setSelectedDate(e.target.value)}
-            className="border-2 rounded-xl border-gray-500 p-2 text-gray-900 bg-white"
-            />
-            <button
-            type="button"
-            onClick={() => {
-                if (selectedDate && !availability.includes(selectedDate)) {
-                setAvailability([...availability, selectedDate]);
-                setSelectedDate('');
-                }
-            }}
-            style={{ backgroundColor: '#3fa2a5', color: 'white' }}
-            onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'black' }}
-            onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#3fa2a5' }}
-            className="bg-[#3fa2a5] text-white px-3 rounded hover:bg-black transition-colors duration-200"
-            >
-            Add
-            </button>
-        </div>
+          <label className="mb-1 font-medium text-gray-700">Weekly Availability*</label>
+          
+          {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
+            <div key={day} className="flex items-center justify-between mb-3 p-3 border border-gray-300 rounded-lg bg-gray-50">
+              <span className="capitalize font-medium w-24 text-gray-800">{day}</span>
+              
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={availability[day]?.available || false}
+                  onChange={(e) => {
+                    const newAvailability = {...availability};
+                    newAvailability[day] = {
+                      ...newAvailability[day],
+                      available: e.target.checked,
+                      start: e.target.checked ? (newAvailability[day]?.start || '09:00') : '',
+                      end: e.target.checked ? (newAvailability[day]?.end || '17:00') : ''
+                    };
+                    setAvailability(newAvailability);
+                  }}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-gray-700">Available</span>
+              </label>
 
-        {/* Show added dates */}
-        {availability.length > 0 && (
-            <p className="text-sm text-gray-700">Selected: {availability.join(', ')}</p>
-        )}
+              {availability[day]?.available && (
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="time"
+                    value={availability[day]?.start || '09:00'}
+                    onChange={(e) => {
+                      const newAvailability = {...availability};
+                      newAvailability[day] = {
+                        ...newAvailability[day],
+                        start: e.target.value
+                      };
+                      setAvailability(newAvailability);
+                    }}
+                    className="border border-gray-300 rounded-md p-2 text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <span className="text-gray-600">to</span>
+                  <input
+                    type="time"
+                    value={availability[day]?.end || '17:00'}
+                    onChange={(e) => {
+                      const newAvailability = {...availability};
+                      newAvailability[day] = {
+                        ...newAvailability[day],
+                        end: e.target.value
+                      };
+                      setAvailability(newAvailability);
+                    }}
+                    className="border border-gray-300 rounded-md p-2 text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              )}
+            </div>
+          ))}
         </div>
 
 
