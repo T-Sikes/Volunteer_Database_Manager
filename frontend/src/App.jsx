@@ -19,11 +19,11 @@ function App() {
         <NotificationSystem />
         <Routes>
           <Route path="/" element={<Home/>} />
-          <Route path="/profile/:username" element={<UserProfile />} />
           <Route path="/volunteer-matching" element={<VolunteerMatching />} />
           <Route path="/notifications" element={<NotificationPage />} />
+          <Route path="/user-login" element={<UserLogin />} />
           <Route path="/portal/" element={<VolunteerPortalLayout />}>
-            <Route path="user-profile" element={<UserProfile/>}/>
+            <Route path="profile" element={<UserProfile/>}/>
             <Route path="events" element={<VolunteerPortalEvents/>}/>
             <Route path="volunteer-history" element={<VolunteerHistory/>}/>
           </Route>

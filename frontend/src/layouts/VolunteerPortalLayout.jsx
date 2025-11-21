@@ -8,7 +8,7 @@ const VolunteerPortalLayout = () => {
           <h1 className="text-center">Volunteer Portal</h1>
           <nav>
             <div className="flex justify-around">
-              <NavLink to="user-profile"><span className="border-2 rounded-md p-1">Profile</span></NavLink>
+              <NavLink to="profile"><span className="border-2 rounded-md p-1">Profile</span></NavLink>
               <NavLink to="events"><span className="border-2 rounded-md p-1">Your Events</span></NavLink>
               <NavLink to="volunteer-history"><span className="border-2 rounded-md p-1">Volunteer History</span></NavLink>
             </div>
