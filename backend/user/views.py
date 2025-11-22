@@ -151,8 +151,8 @@ def get_current_user(request):
     user = request.user
     return Response({
         'email': user.email,
-        'email': user.email,
         'id': user.id,
+        'is_superuser' : user.is_superuser,
         # Add any other user fields you need
     })
 
@@ -173,6 +173,9 @@ def get_volunteer_history(request, email):
 def save_volunteer_record(request, email):
     user = get_object_or_404(UserCredentials, email=email)
     
+    # Get the user's profile
+    user_profile = get_object_or_404(UserProfile, user=user)
+   
     event_id = request.data.get("event_id")
     if not event_id:
         return Response({"error": "event_id is required"}, status=400)
@@ -191,6 +194,7 @@ def save_volunteer_record(request, email):
     
     record = VolunteerHistory.objects.create(
         user=user,
+        user_profile=user_profile,
         event=event,
         hours_served=hours,
         status=status
