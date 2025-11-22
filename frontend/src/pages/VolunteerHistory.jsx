@@ -136,18 +136,6 @@ function VolunteerHistory() {
                 </tbody>
               </table>
             </div>
-
-            {isSuperuser && (
-              <button
-                onClick={toggleForm}
-                style = {{backgroundColor: '#3fa2a5'}}
-                onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'black' }}
-                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#3fa2a5' }}
-                className="bg-blue-500 text-white px-4 py-2 rounded-xl mt-4 block mx-auto"
-              >
-                Add Another Record
-              </button>
-            )}
           </div>
         </div>
       )}
