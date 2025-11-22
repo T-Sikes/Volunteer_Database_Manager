@@ -205,6 +205,7 @@ class VolunteerHistory(models.Model):
     ]
     
     user = models.ForeignKey(UserCredentials, on_delete=models.CASCADE)
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     event = models.ForeignKey(EventDetails, on_delete=models.CASCADE)
     participation_date = models.DateField(default=timezone.now)
     hours_served = models.PositiveIntegerField(default=0)

@@ -123,3 +123,10 @@ class VolunteerRecordSerializer(serializers.ModelSerializer):
         if obj.hours_served > 0:
             return "Completed"
         return "Pending"
+    
+
+class UserProfileSerializerBasic(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserProfile
+        fields = "__all__"
