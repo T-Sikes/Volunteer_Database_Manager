@@ -92,8 +92,8 @@ HARD_CODED_EVENTS = [
 #--------------------------
 
 @api_view(['GET'])
-def get_user_profile(request, username):
-    user = get_object_or_404(UserCredentials, username=username)
+def get_user_profile(request, email):
+    user = get_object_or_404(UserCredentials, email=email)
     
     try:
         profile = UserProfile.objects.get(user=user)
@@ -114,8 +114,8 @@ def get_user_profile(request, username):
         })
 
 @api_view(['POST'])
-def save_user_profile(request, username):
-    user = get_object_or_404(UserCredentials, username=username)
+def save_user_profile(request, email):
+    user = get_object_or_404(UserCredentials, email=email)
     
     try:
         profile = UserProfile.objects.get(user=user)
@@ -150,7 +150,7 @@ def get_current_user(request):
     """
     user = request.user
     return Response({
-        'username': user.username,
+        'email': user.email,
         'email': user.email,
         'id': user.id,
         # Add any other user fields you need
@@ -163,15 +163,15 @@ def get_current_user(request):
 #---------------------------
     
 @api_view(['GET'])
-def get_volunteer_history(request, username):
-    user = get_object_or_404(UserCredentials, username=username)
+def get_volunteer_history(request, email):
+    user = get_object_or_404(UserCredentials, email=email)
     history_qs = VolunteerHistory.objects.filter(user=user)
     serializer = VolunteerRecordSerializer(history_qs, many=True)
     return Response(serializer.data)
 
 @api_view(['POST'])
-def save_volunteer_record(request, username):
-    user = get_object_or_404(UserCredentials, username=username)
+def save_volunteer_record(request, email):
+    user = get_object_or_404(UserCredentials, email=email)
     
     event_id = request.data.get("event_id")
     if not event_id:

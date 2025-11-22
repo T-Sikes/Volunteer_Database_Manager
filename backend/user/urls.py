@@ -11,12 +11,12 @@ urlpatterns = [
     path('current/', get_current_user, name='get_current_user'),
 
     # User profile
-    path('profile/<str:username>/', get_user_profile),
-    path('profile/<str:username>/save/', save_user_profile),
+    path('profile/<str:email>/', get_user_profile),
+    path('profile/<str:email>/save/', save_user_profile),
 
     # Volunteer history
-    path('history/<str:username>/', get_volunteer_history),
-    path('history/<str:username>/save/', save_volunteer_record),
+    path('history/<str:email>/', get_volunteer_history),
+    path('history/<str:email>/save/', save_volunteer_record),
 
     # Events
     path('events/', get_events),

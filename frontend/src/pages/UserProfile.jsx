@@ -18,12 +18,12 @@ function UserProfile() {
     axiosInstance.get('user/current/')  // ← CHANGED
       .then(response => {
         console.log("✅ Current user response:", response.data);
-        const username = response.data.username;
-        const encodedUsername = encodeURIComponent(username);
-        console.log("📝 Username (encoded):", encodedUsername);
+        const email = response.data.email;
+        const encodedEmail = encodeURIComponent(email);
+        console.log("📝 Email (encoded):", encodedEmail);
 
 
-        return axiosInstance.get(`user/profile/${encodedUsername}/`);  // ← CHANGED
+        return axiosInstance.get(`user/profile/${encodedEmail}/`);  // ← CHANGED
       })
       .then(response => {
         console.log("✅ Profile data received:", response.data);
@@ -39,13 +39,13 @@ function UserProfile() {
   }, []);
 
   const submitProfile = (data) => {
-  // Get current username dynamically
+  // Get current email dynamically
   axiosInstance.get('user/current/')
     .then(response => {
-      const username = response.data.username;
-      const encodedUsername = encodeURIComponent(username);
+      const email = response.data.email;
+      const encodedEmail = encodeURIComponent(email);
       
-      return axiosInstance.post(`user/profile/${encodedUsername}/save/`, data);
+      return axiosInstance.post(`user/profile/${encodedEmail}/save/`, data);
     })
     .then(response => {
       setProfileData(response.data.data);
