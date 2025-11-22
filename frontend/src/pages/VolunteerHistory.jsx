@@ -1,65 +1,89 @@
 import { useState, useEffect } from "react";
 import VolunteerHistoryForm from "../components/VolunteerHistoryForm.jsx";
-import EventManagement from "./EventManagement.jsx"; //  pull events dynamically
+import AxiosInstance from "../components/AxiosInstance.jsx";
 
 function VolunteerHistory() {
   const [showForm, setShowForm] = useState(false);
   const [historyData, setHistoryData] = useState([]);
   const [events, setEvents] = useState([]); // For the form dropdown
-  const API_BASE = "http://127.0.0.1:8000/user";
-  const username = "johndoe";
+  const [currentUsername, setCurrentUsername] = useState("");
+  const [isSuperuser, setIsSuperuser] = useState(false);
   
+   // Get current user first
+  useEffect(() => {
+    console.log("🔄 Getting current user for volunteer history...");
+    AxiosInstance.get('user/current/')
+      .then(response => {
+        const username = response.data.username;
+        const superuser = response.data.is_superuser || false; // check if superuser
+        console.log("✅ Current user:", username);
+        setCurrentUsername(username);
+        setIsSuperuser(superuser);
+      })
+      .catch(err => {
+        console.error("❌ Error getting current user:", err);
+      });
+  }, []);
+
 
 // Pull existing volunteer history from backend
-    useEffect(() => {
-    fetch(`${API_BASE}/history/${username}/`)
-      .then(res => res.json())
-      .then(data => setHistoryData(data))
-      .catch(err => console.error("Failed to fetch history:", err));
-  }, [username]);
-
-   // Pull events from backend
   useEffect(() => {
-    fetch(`${API_BASE}/events/`)
-      .then(res => res.json())
-      .then(data => setEvents(data))
+    if (!currentUsername) return; // Wait until we have username
+    
+    console.log("🔄 Fetching volunteer history for:", currentUsername);
+    AxiosInstance.get(`user/history/${currentUsername}/`)
+      .then(response => {
+        console.log("✅ Volunteer history data:", response.data);
+        setHistoryData(response.data);
+      })
       .catch(err => {
-        console.warn("Events fetch failed, using sample events");
+        console.error("❌ Failed to fetch history:", err);
+      });
+  }, [currentUsername]);
+
+ // Pull events from backend
+  useEffect(() => {
+    console.log("🔄 Fetching events...");
+    AxiosInstance.get('user/events/')
+      .then(response => {
+        console.log("✅ Events data:", response.data);
+        setEvents(response.data);
+      })
+      .catch(err => {
+        console.error("❌ Events fetch failed:", err);
+        console.warn("Using fallback events data");
         setEvents([
-          { name: "Community Cleanup", description: "Cleaning up litter", location: "Central Park", requiredSkills: ["Leadership"], urgency: "Medium", eventDate: "2025-09-25" },
-          { name: "Food Drive", description: "Distribute food packages", location: "Downtown Shelter", requiredSkills: ["Food prep"], urgency: "High", eventDate: "2025-10-01" },
-          { name: "Test Event", description: "Temporary test event", location: "Test Location", requiredSkills: ["Testing"], urgency: "Low", eventDate: "2025-10-20" },
+          { id: 1, name: "Community Cleanup", description: "Cleaning up litter", location: "Central Park", requiredSkills: ["Leadership"], urgency: "Medium", eventDate: "2025-09-25" },
+          { id: 2, name: "Food Drive", description: "Distribute food packages", location: "Downtown Shelter", requiredSkills: ["Food prep"], urgency: "High", eventDate: "2025-10-01" },
+          { id: 3, name: "Test Event", description: "Temporary test event", location: "Test Location", requiredSkills: ["Testing"], urgency: "Low", eventDate: "2025-10-20" },
         ]);
       });
   }, []);
 
 
   const submitRecord = (record) => {
-  fetch(`${API_BASE}/history/${username}/save/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(record),
-  })
-    .then(res => {
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      return res.json();
-    })
-    .then(data => {
-      console.log("Backend response:", data); // Debug log
-      
-      // Backend returns the serialized record in data.data
-      const newRecord = data.data;
-      
-      setHistoryData([...historyData, newRecord]);
-      setShowForm(false);
-    })
-    .catch(err => {
-      console.error("Failed to save record:", err);
-      alert("Failed to save record. Check console for details.");
-    });
-};
+    if (!currentUsername) {
+      alert("Please wait while we load your user information");
+      return;
+    }
+
+    console.log("📤 Saving volunteer record:", record);
+    AxiosInstance.post(`user/history/${currentUsername}/save/`, record)
+      .then(response => {
+        console.log("✅ Save response:", response.data);
+        
+        // Backend returns the serialized record in data.data
+        const newRecord = response.data.data;
+        
+        setHistoryData([...historyData, newRecord]);
+        setShowForm(false);
+      })
+      .catch(err => {
+        console.error("❌ Failed to save record:", err);
+        console.error("Error details:", err.response?.data);
+        alert("Failed to save record. Check console for details.");
+      });
+  };
 
   const toggleForm = () => setShowForm(!showForm);
 
@@ -112,15 +136,18 @@ function VolunteerHistory() {
                 </tbody>
               </table>
             </div>
-            <button
-              onClick={toggleForm}
-              style = {{backgroundColor: '#3fa2a5'}}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'black' }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#3fa2a5' }}
-              className="bg-blue-500 text-white px-4 py-2 rounded-xl mt-4 block mx-auto"
-            >
-              Add Another Record
-            </button>
+
+            {isSuperuser && (
+              <button
+                onClick={toggleForm}
+                style = {{backgroundColor: '#3fa2a5'}}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'black' }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#3fa2a5' }}
+                className="bg-blue-500 text-white px-4 py-2 rounded-xl mt-4 block mx-auto"
+              >
+                Add Another Record
+              </button>
+            )}
           </div>
         </div>
       )}

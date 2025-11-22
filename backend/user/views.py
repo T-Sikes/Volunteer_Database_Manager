@@ -153,6 +153,7 @@ def get_current_user(request):
         'username': user.username,
         'email': user.email,
         'id': user.id,
+        'is_superuser' : user.is_superuser,
         # Add any other user fields you need
     })
 
@@ -172,6 +173,9 @@ def get_volunteer_history(request, username):
 @api_view(['POST'])
 def save_volunteer_record(request, username):
     user = get_object_or_404(UserCredentials, username=username)
+
+     # Get the user's profile 
+    user_profile = get_object_or_404(UserProfile, user=user)
     
     event_id = request.data.get("event_id")
     if not event_id:
@@ -191,6 +195,7 @@ def save_volunteer_record(request, username):
     
     record = VolunteerHistory.objects.create(
         user=user,
+        user_profile=user_profile,
         event=event,
         hours_served=hours,
         status=status
