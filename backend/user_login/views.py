@@ -37,9 +37,11 @@ def login(request):
 def signup(request):
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
+        email = serializer.validated_data['email']
+        username = serializer.validated_data.get('username', email)  # Default to email if username not provided
         user = User.objects.create_user(
-            email=serializer.validated_data['email'],
-            username =serializer.validated_data.get('username', ''),
+            email=email,
+            username=username,
             password=serializer.validated_data['password']
         )
         token, created = Token.objects.get_or_create(user=user)
