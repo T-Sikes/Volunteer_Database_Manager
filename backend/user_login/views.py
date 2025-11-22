@@ -11,18 +11,20 @@ from django.shortcuts import get_object_or_404
 
 from .serializers import UserSerializer
 
+from volunteer_db.models import UserCredentials
+
 User = get_user_model()
 
 # User Login
 @api_view(['POST'])
 def login(request):
-    username = request.data.get('username')
+    email = request.data.get('email')
     password = request.data.get('password')
 
-    if not username or not password:
-        return Response({'detail': 'Username and password required'}, status=status.HTTP_400_BAD_REQUEST)
+    if not email or not password:
+        return Response({'detail': 'email and password required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = get_object_or_404(User, username=username)
+    user = get_object_or_404(User, email=email)
 
     if not user.check_password(password):
         return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -36,8 +38,8 @@ def signup(request):
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         user = User.objects.create_user(
-            username=serializer.validated_data['username'],
-            email=serializer.validated_data.get('email', ''),
+            email=serializer.validated_data['email'],
+            username =serializer.validated_data.get('username', ''),
             password=serializer.validated_data['password']
         )
         token, created = Token.objects.get_or_create(user=user)
@@ -50,4 +52,4 @@ def signup(request):
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def test_token(request):
-    return Response(f"Token works for {request.user.username}", status=status.HTTP_200_OK)
+    return Response(f"Token works for {request.user.email}", status=status.HTTP_200_OK)

@@ -51,18 +51,18 @@ class UserCredentialsManager(BaseUserManager):
 # =========================
 
 class UserCredentials(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(unique=True, null=True, blank=True)
+    username = models.CharField(max_length=150, blank=True, null=True)
+    email = models.EmailField(unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
     objects = UserCredentialsManager()
 
-    USERNAME_FIELD = 'username'
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
     def __str__(self):
-        return self.username
+        return self.email
     
     # note AbstractBaseUser is built in django paramater that creates a hashed password field 
     # this hashed password should not be directly accesed. 

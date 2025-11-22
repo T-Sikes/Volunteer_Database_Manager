@@ -5,7 +5,7 @@ export const loginUser = async (email, password) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username: email, password }),
+      body: JSON.stringify({ email, password }),
     });
 
     if (!response.ok) {
@@ -28,7 +28,7 @@ export const registerUser = async (email, password) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username: email, email, password }),
+      body: JSON.stringify({ email, password }),
     });
 
     if (!response.ok) {
