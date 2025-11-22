@@ -93,7 +93,12 @@ HARD_CODED_EVENTS = [
 
 @api_view(['GET'])
 def get_user_profile(request, username):
-    user = get_object_or_404(UserCredentials, username=username)
+    # Try to find user by username first, then by email if that fails
+    try:
+        user = UserCredentials.objects.get(username=username)
+    except UserCredentials.DoesNotExist:
+        # If username lookup fails, try email (handles case where email is used as username)
+        user = get_object_or_404(UserCredentials, email=username)
     
     try:
         profile = UserProfile.objects.get(user=user)
@@ -115,7 +120,12 @@ def get_user_profile(request, username):
 
 @api_view(['POST'])
 def save_user_profile(request, username):
-    user = get_object_or_404(UserCredentials, username=username)
+    # Try to find user by username first, then by email if that fails
+    try:
+        user = UserCredentials.objects.get(username=username)
+    except UserCredentials.DoesNotExist:
+        # If username lookup fails, try email (handles case where email is used as username)
+        user = get_object_or_404(UserCredentials, email=username)
     
     try:
         profile = UserProfile.objects.get(user=user)
@@ -149,8 +159,10 @@ def get_current_user(request):
     Get the current logged-in user's basic info
     """
     user = request.user
+    # Use email as fallback if username is null
+    username = user.username if user.username else user.email
     return Response({
-        'username': user.username,
+        'username': username,
         'email': user.email,
         'id': user.id,
         'is_superuser' : user.is_superuser,
@@ -165,14 +177,25 @@ def get_current_user(request):
     
 @api_view(['GET'])
 def get_volunteer_history(request, username):
-    user = get_object_or_404(UserCredentials, username=username)
+    # Try to find user by username first, then by email if that fails
+    try:
+        user = UserCredentials.objects.get(username=username)
+    except UserCredentials.DoesNotExist:
+        # If username lookup fails, try email (handles case where email is used as username)
+        user = get_object_or_404(UserCredentials, email=username)
+
     history_qs = VolunteerHistory.objects.filter(user=user)
     serializer = VolunteerRecordSerializer(history_qs, many=True)
     return Response(serializer.data)
 
 @api_view(['POST'])
 def save_volunteer_record(request, username):
-    user = get_object_or_404(UserCredentials, username=username)
+    # Try to find user by username first, then by email if that fails
+    try:
+        user = UserCredentials.objects.get(username=username)
+    except UserCredentials.DoesNotExist:
+        # If username lookup fails, try email (handles case where email is used as username)
+        user = get_object_or_404(UserCredentials, email=username)
 
      # Get the user's profile 
     user_profile = get_object_or_404(UserProfile, user=user)
