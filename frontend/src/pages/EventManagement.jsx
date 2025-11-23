@@ -49,8 +49,6 @@ function EventManagement() {
       const response = await AxiosInstance.get(`event/${event_id}/volunteers/`)
       const data = response.data
       setVolunteersForEvent(data.map(x => x.user_profile_details))
-      console.log(data.map(x => x.user_profile_details))
-      // console.log(data)
     } catch (err) {
       console.log(err)
     }
@@ -62,6 +60,8 @@ function EventManagement() {
         const response = await AxiosInstance.post("event/create/", event.extendedProps.eventData)
         const data = response.data
         event.extendedProps.eventData = data
+        event.start = event.extendedProps.eventData.start_date
+        event.end = event.extendedProps.eventData.end_date
         setEventsArray(prevState => [...prevState, event])
       } catch (err) {
         console.log(err)
@@ -74,6 +74,8 @@ function EventManagement() {
         const response = await AxiosInstance.put(`event/${pk}/`, event.extendedProps.eventData)
         const data = response.data
         event.extendedProps.eventData = data
+        event.start = event.extendedProps.eventData.start_date
+        event.end = event.extendedProps.eventData.end_date
         setEventsArray(prevState => {
           const modifiedArray = [...prevState]
           const index = modifiedArray.findIndex(item => item.extendedProps.eventData.id == pk)
@@ -160,18 +162,25 @@ function EventManagement() {
               newEvent={clickedEvent ? false : true}
               showVolunteerAssign={toggleVolunteerAssign}
             />
-            <div className="bg-white border-gray-500 border-2 h-fit w-fit p-10 rounded-lg"> 
-              <h2 className="text-2xl text-center">Assigned Volunteers</h2>
-              {volunteersForEvent.map(volunteer => (
-                <div 
-                  key={volunteer.id} 
-                  className="px-2" 
-                >
-                  <p className="text-lg">{volunteer.full_name} (ID: {volunteer.id})</p>
-                  <hr/>
+            {clickedEvent &&
+              <div className="bg-white border-gray-500 border-2 h-fit w-fit p-10 rounded-lg"> 
+                <h2 className="text-2xl text-center">Assigned Volunteers</h2>
+                <div className="mt-5">
+                  {volunteersForEvent.length == 0 && 
+                    <p>No assigned volunteers for this event</p>
+                  }
+                  {volunteersForEvent.map(volunteer => (
+                    <div 
+                      key={volunteer.id} 
+                      className="px-2" 
+                    >
+                      <p className="text-lg">{volunteer.full_name} (ID: {volunteer.id})</p>
+                      <hr/>
+                    </div>
+                    ))}
                 </div>
-                ))}
-            </div>
+              </div>
+            }
           </div>
         </div>
       }
@@ -181,6 +190,7 @@ function EventManagement() {
           <div className="absolute inset-0 m-auto h-fit w-fit">
             <VolunteerAssignList
               eventID={clickedEvent.extendedProps.eventData.id}
+              eventData={clickedEvent.extendedProps.eventData}
               closeVolunteerAssign={toggleVolunteerAssign}
             />
           </div>

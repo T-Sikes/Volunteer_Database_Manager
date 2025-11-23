@@ -18,7 +18,8 @@ function App() {
       <Router>
         <NotificationSystem />
         <Routes>
-          <Route path="/" element={<Home/>} />
+          {/* No home page for now */}
+          {/* <Route path="/" element={<Home/>} /> */}
           <Route path="/volunteer-matching" element={<VolunteerMatching />} />
           <Route path="/notifications" element={<NotificationPage />} />
           <Route path="/user-login" element={<UserLogin />} />

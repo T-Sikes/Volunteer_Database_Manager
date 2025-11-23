@@ -255,6 +255,20 @@ def assign_volunteer(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def unassign_volunteer(request, event, user, user_profile):
+    if not request.user.is_superuser:
+        raise PermissionDenied("You do not have permission to do this")
+    
+    try:
+        assigned_event = VolunteerHistory.objects.filter(event=event, user=user, user_profile=user_profile)
+    except VolunteerHistory.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    assigned_event.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_events(request):

@@ -38,7 +38,7 @@ const VolunteerList = () => {
           <div className="flex justify-center items-center h-screen w-screen">
             <div className="flex flex-col bg-white border-gray-500 border-2 h-fit w-fit p-10 rounded-lg text-lg">
               <p> <span className="font-bold">Name:</span> {selectedVolunteer.full_name}</p>
-              <p> <span className="font-bold">Employee ID:</span> {selectedVolunteer.id}</p>
+              <p> <span className="font-bold">ID:</span> {selectedVolunteer.id}</p>
               <p> <span className="font-bold">Location:</span> {selectedVolunteer.city} {selectedVolunteer.state}</p>
               <p> <span className="font-bold">Availibility:</span> {selectedVolunteer.availability}</p>
               <p> <span className="font-bold">Skills:</span> {selectedVolunteer.skills}</p>
