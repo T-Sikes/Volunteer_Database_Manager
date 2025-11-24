@@ -4,6 +4,7 @@ from user.serializers import UserProfileSerializerBasic
 
 
 class VolunteerSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source="full_name")
     class Meta:
         model = UserProfile
         fields = "__all__"

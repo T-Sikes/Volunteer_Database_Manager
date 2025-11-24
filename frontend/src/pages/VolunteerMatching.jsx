@@ -7,51 +7,73 @@ export default function VolunteerMatching() {
   const [volunteers, setVolunteers] = useState([]);
   const [events, setEvents] = useState([]);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [volRes, evRes, matchRes] = await Promise.all([
-          fetch("http://localhost:8000/event/volunteers/"),
-          fetch("http://localhost:8000/event/"),
-          fetch("http://localhost:8000/event/matches/")
-        ]);
-
-        if (!volRes.ok || !evRes.ok || !matchRes.ok) throw new Error("Failed to fetch backend data");
-
-        const [volData, evData, matchData] = await Promise.all([
-          volRes.json(), evRes.json(), matchRes.json()
-        ]);
-
-        const uniqueVolunteers = Array.from(new Map(volData.map(v => [v.name.toLowerCase(), v])).values());
-
-        const normalizedEvents = evData.map(e => ({
-          name: e.event_name,
-          requiredSkills: e.required_skills,
-          event_date: e.start_date,
-          location: e.location,
-          description: e.description,
-          urgency: e.urgency,
-        }));
-
-        setVolunteers(uniqueVolunteers);
-        setEvents(normalizedEvents);
-        setMatches(Array.isArray(matchData) ? matchData : []);
-      } catch (err) {
-        console.error(err);
-        notifyError("Failed to load volunteers, events, or matches.");
+useEffect(() => {
+  async function fetchData() {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        notifyError("No token found — please log in.");
+        return;
       }
-    }
 
-    fetchData();
-  }, []);
+      const authHeaders = {
+        method: "GET",
+        headers: { "Authorization": `Token ${token}` },
+      };
+
+      const [volRes, evRes, matchRes] = await Promise.all([
+        fetch("http://localhost:8000/event/volunteers/", authHeaders),
+        fetch("http://localhost:8000/event/", authHeaders),
+        fetch("http://localhost:8000/event/matches/", authHeaders),
+      ]);
+
+      if (!volRes.ok || !evRes.ok || !matchRes.ok) {
+        throw new Error("Backend request failed");
+      }
+
+      const [volData, evData, matchData] = await Promise.all([
+        volRes.json(),
+        evRes.json(),
+        matchRes.json(),
+      ]);
+ 
+      const normalizedEvents = evData.map(e => ({
+        name: e.event_name || "Unnamed Event",
+        requiredSkills: Array.isArray(e.required_skills) ? e.required_skills : [],
+        event_date: e.start_date || "",
+        location: e.location || "",
+        description: e.description || "",
+        urgency: e.urgency || "low",
+      }));
+
+      const uniqueVolunteers = Array.from(
+        new Map(volData.map(v => [(v.name || "").toLowerCase(), v])).values()
+      );
+
+      setVolunteers(uniqueVolunteers);
+      setEvents(normalizedEvents);
+      setMatches(Array.isArray(matchData) ? matchData : []);
+
+    } catch (err) {
+      console.error("Loading error:", err);
+      notifyError(`Error loading data: ${err.message}`);
+    }
+  }
+
+  fetchData();
+}, []);
 
   const handleMatchSubmit = async (match) => {
     try {
+      const token = localStorage.getItem("token");
       console.log("Submitting match:", match);
 
       const response = await fetch("http://localhost:8000/event/match/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Token ${token}`,
+        },
         body: JSON.stringify(match),
       });
 
@@ -93,10 +115,14 @@ export default function VolunteerMatching() {
 
   const handleRemove = async (index) => {
     const removedMatch = matches[index];
+    const token = localStorage.getItem("token");
     
     try {
       const response = await fetch(`http://localhost:8000/event/match/${removedMatch.volunteerName}/`, {
         method: "DELETE",
+        headers: {
+          "Authorization": `Token ${token}`,
+        },
       });
 
       if (!response.ok) {

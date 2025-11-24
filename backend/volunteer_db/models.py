@@ -204,6 +204,17 @@ class VolunteerHistory(models.Model):
         ('cancelled', 'Cancelled'),
     ]
     
+    MATCH_CHOICES = [
+    ('manual', 'Manual'),
+    ('auto', 'Automatic'),
+    ]
+
+    match_type = models.CharField(
+        max_length=10,
+        choices=MATCH_CHOICES,
+        default='auto',
+    )
+    
     user = models.ForeignKey(UserCredentials, on_delete=models.CASCADE)
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     event = models.ForeignKey(EventDetails, on_delete=models.CASCADE)
@@ -214,6 +225,8 @@ class VolunteerHistory(models.Model):
         choices=STATUS_CHOICES, 
         default='pending'
     )
+    match_type = models.CharField(max_length=20, null=True, blank=True)  # 'manual' or 'auto' 
+    timestamp = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.user.username} - {self.event.event_name}"
