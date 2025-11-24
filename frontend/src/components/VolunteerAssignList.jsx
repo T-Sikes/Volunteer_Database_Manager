@@ -3,66 +3,66 @@ import { format } from "date-fns"
 import AxiosInstance from './AxiosInstance'
 
 const VolunteerAssignList = (props) => {
-  const [volunteers, setVolunteers] = useState([])
+  const [volunteers, setVolunteers] = useState(props.volunteers)
   const [selectedVolunteer, setSelectedVolunteer] = useState(null)
   const [eventID, setEventID] = useState(props.eventID)
-  const [isAssignedMap, setIsAssignedMap] = useState({})
+  const [isAssignedMap, setIsAssignedMap] = useState(props.isAssignedMap)
   const [assignOrUnsassign, setAssignOrUnassign] = useState("")
   const [eventStartDate, setEventStartDate] = useState(null)
   const [eventEndDate, setEventEndDate] = useState(null)
-  const [isAvailableMap, setIsAvailableMap] = useState({})
+  const [isAvailableMap, setIsAvailableMap] = useState(props.isAvailableMap)
 
-  useEffect(() => {
-    fetchVolunteers()
-    fetchVolunteersForEvent(eventID)
-  },[])
+  // useEffect(() => {
+  //   fetchVolunteers()
+  //   fetchVolunteersForEvent(eventID)
+  // },[])
 
   useEffect(() => {
     changeButton()
   },[selectedVolunteer])
 
-  useEffect(() => {
-    if(volunteers.length > 0 && eventStartDate && eventEndDate) {
-      volunteers.forEach((volunteer) => checkAvailability(volunteer, eventStartDate, eventEndDate))
-    }
-  }, [volunteers, eventStartDate, eventEndDate])
+  // useEffect(() => {
+  //   if(volunteers.length > 0 && eventStartDate && eventEndDate) {
+  //     volunteers.forEach((volunteer) => checkAvailability(volunteer, eventStartDate, eventEndDate))
+  //   }
+  // }, [volunteers, eventStartDate, eventEndDate])
 
 
   // Fetch all volunteers
-  const fetchVolunteers = async() => {
-    try{
-      const response = await AxiosInstance.get("event/volunteers/")
-      const data = response.data
-      setVolunteers(data)
-    } catch (err) {
-      console.log(err)
-    }
-  }
+  // const fetchVolunteers = async() => {
+  //   try{
+  //     const response = await AxiosInstance.get("event/volunteers/")
+  //     const data = response.data
+  //     setVolunteers(data)
+  //   } catch (err) {
+  //     console.log(err)
+  //   }
+  // }
 
   // Fetch volunteers assigned to this event
-  const fetchVolunteersForEvent = async(event_id) => {
-    try{
-      const response = await AxiosInstance.get(`event/${event_id}/volunteers/`)
-      const data = response.data
-      const ids = data.map(x => x.user_profile_details.id)
-      const mp = {}
-      ids.forEach((id) => {
-        mp[id] = true
-      })
-      setIsAssignedMap(mp)
+  // const fetchVolunteersForEvent = async(event_id) => {
+  //   try{
+  //     const response = await AxiosInstance.get(`event/${event_id}/volunteers/`)
+  //     const data = response.data
+  //     const ids = data.map(x => x.user_profile_details.id)
+  //     const mp = {}
+  //     ids.forEach((id) => {
+  //       mp[id] = true
+  //     })
+  //     setIsAssignedMap(mp)
 
-      const formattedStartDate = format(new Date(props.eventData.start_date), 'eeee, HH:mm').split(", ")
-      const formattedEndDate = format(new Date(props.eventData.end_date), 'eeee, HH:mm').split(", ")
-      const startDate = {dayOfWeek: formattedStartDate[0], time: formattedStartDate[1]}
-      const endDate = {dayOfWeek: formattedEndDate[0], time: formattedEndDate[1]}
+  //     const formattedStartDate = format(new Date(props.eventData.start_date), 'eeee, HH:mm').split(", ")
+  //     const formattedEndDate = format(new Date(props.eventData.end_date), 'eeee, HH:mm').split(", ")
+  //     const startDate = {dayOfWeek: formattedStartDate[0], time: formattedStartDate[1]}
+  //     const endDate = {dayOfWeek: formattedEndDate[0], time: formattedEndDate[1]}
       
-      setEventStartDate(startDate)
-      setEventEndDate(endDate)
+  //     setEventStartDate(startDate)
+  //     setEventEndDate(endDate)
 
-    } catch (err) {
-      console.log(err)
-    }
-  }
+  //   } catch (err) {
+  //     console.log(err)
+  //   }
+  // }
 
   const assignVolunteer = async (eventID, sv) => {
     try{
@@ -98,25 +98,25 @@ const VolunteerAssignList = (props) => {
     setAssignOrUnassign("assign")
   }
 
-  const checkAvailability = (volunteer, evStartDate, evEndDate) => {
-    const availability = volunteer.availability_json
-    const eventStartDayOfWeek = (evStartDate.dayOfWeek).toLowerCase()
-    const eventStartTime = (evStartDate.time).toLowerCase()
-    const eventEndDayOfWeek = (evEndDate.dayOfWeek).toLowerCase()
-    const eventEndTime = (evEndDate.time).toLowerCase()
+  // const checkAvailability = (volunteer, evStartDate, evEndDate) => {
+  //   const availability = volunteer.availability_json
+  //   const eventStartDayOfWeek = (evStartDate.dayOfWeek).toLowerCase()
+  //   const eventStartTime = (evStartDate.time).toLowerCase()
+  //   const eventEndDayOfWeek = (evEndDate.dayOfWeek).toLowerCase()
+  //   const eventEndTime = (evEndDate.time).toLowerCase()
 
-    if(!availability[eventStartDayOfWeek].available || !availability[eventEndDayOfWeek].available){
-      setIsAvailableMap(prevState => { return {...prevState, [volunteer.id]: false}})
-      return
-    }
+  //   if(!availability[eventStartDayOfWeek].available || !availability[eventEndDayOfWeek].available){
+  //     setIsAvailableMap(prevState => { return {...prevState, [volunteer.id]: false}})
+  //     return
+  //   }
 
-    if(availability[eventStartDayOfWeek].start > eventStartTime || availability[eventEndDayOfWeek].end < eventEndTime){
-      setIsAvailableMap(prevState => { return {...prevState, [volunteer.id]: false}})
-      return
-    }
+  //   if(availability[eventStartDayOfWeek].start > eventStartTime || availability[eventEndDayOfWeek].end < eventEndTime){
+  //     setIsAvailableMap(prevState => { return {...prevState, [volunteer.id]: false}})
+  //     return
+  //   }
 
-    setIsAvailableMap(prevState => { return {...prevState, [volunteer.id]: true}})
-  }
+  //   setIsAvailableMap(prevState => { return {...prevState, [volunteer.id]: true}})
+  // }
 
 
 
