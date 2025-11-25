@@ -41,6 +41,9 @@ const VolunteerList = () => {
       const dayData = availabilityJson[day]
       const dayName = day.charAt(0).toUpperCase() + day.slice(1)
       
+      if (!dayData) {
+        return `${dayName}: Not available`
+      }
       if (!dayData.available) {
         return `${dayName}: Not available`
       }

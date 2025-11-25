@@ -4,21 +4,50 @@ import "react-datepicker/dist/react-datepicker.css"
 import { formatInTimeZone } from "date-fns-tz"
 
 function EventForm(props) {
-  // Hardcoded required skills for now
-  const skills = ["Bilingual/Multilingual", "Childcare", "Basic math", "Able to lift more than 50 lbs", "Leadership", "Food prep", "Retail experience"]
+  const skills = ["Bilingual/Multilingual", "Childcare", "Basic math", "Ability to lift 50 lbs", "Leadership", "Food prep", "Retail experience, Computer literacy", "Cleaning and sanitation", "First aid/CPR", "Ability to use hand tools"]
   const states = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"]
 
-
-  const [eventData, setEventData] = useState({...props.openedEvent})  // State variable that stores data from the event form in an object
-  const [selectedStartDate, setSelectedStartDate] = useState("start_date" in props.openedEvent ? new Date(props.openedEvent.start_date) : new Date())
-  const [selectedEndDate, setSelectedEndDate] = useState("end_date" in props.openedEvent ? new Date(props.openedEvent.end_date) : new Date())
+  const [eventData, setEventData] = useState({...props.openedEvent})
+  
+  // One date picker for the event date
+  const [selectedDate, setSelectedDate] = useState(
+    "start_date" in props.openedEvent 
+      ? new Date(props.openedEvent.start_date) 
+      : new Date()
+  )
+  
+  // Two separate time pickers
+  const [startTime, setStartTime] = useState(
+    "start_date" in props.openedEvent 
+      ? new Date(props.openedEvent.start_date) 
+      : new Date()
+  )
+  const [endTime, setEndTime] = useState(
+    "end_date" in props.openedEvent 
+      ? new Date(props.openedEvent.end_date) 
+      : new Date()
+  )
+  
   const [selectedSkills, setSelectedSkills] = useState(props.openedEvent.required_skills)
   const [skillsDropdownOpen, setSkillsDropdownOpen] = useState(false);
   const [showConfirmMsg, setShowConfirmMsg] = useState(false);
   const [noSelectedSkills, setNoSelectedSkills] = useState(false)
+  const [timeError, setTimeError] = useState("")
   const formRef = useRef(null)
   
-  // Updates event object whenever form data changes
+  // Helper functions to combine date with times
+  const getStartDateTime = () => {
+    const start = new Date(selectedDate);
+    start.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
+    return start;
+  };
+
+  const getEndDateTime = () => {
+    const end = new Date(selectedDate);
+    end.setHours(endTime.getHours(), endTime.getMinutes(), 0, 0);
+    return end;
+  };
+
   const handleChange = (e) => {
     const key = e.target.name
     const value = e.target.value
@@ -28,41 +57,55 @@ function EventForm(props) {
     })
   }
 
-  // Pass event form data to parent component and close form when user clicks save
   const handleSave = (e) => {
     e.preventDefault()
     const form = formRef.current;
+    const isError = false;
+
     if (selectedSkills.length > 0){
       setNoSelectedSkills(false)
     }
 
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      if (selectedSkills.length == 0){
-        setNoSelectedSkills(true)
-      }
-      return;
+    if (endTime.getHours() < startTime.getHours() || 
+    (endTime.getHours() === startTime.getHours() && endTime.getMinutes() <= startTime.getMinutes())) {
+      setTimeError("End time must be after start time");
+      isError = true
     }
-    
+    else{
+      setTimeError("") 
+    } 
+
     if (selectedSkills.length == 0){
       setNoSelectedSkills(true)
-      return
+      isError = true
     }
 
-    eventData.start_date = formatInTimeZone(selectedStartDate, "UTC", "yyyy-MM-dd HH:mm:ss")
-    eventData.end_date = formatInTimeZone(selectedEndDate, "UTC", "yyyy-MM-dd HH:mm:ss")
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    if(isError)
+      return;
+    
+    
+
+    // Combine date with times to create full DateTime objects
+    const startDateTime = getStartDateTime();
+    const endDateTime = getEndDateTime();
+
+    eventData.start_date = formatInTimeZone(startDateTime, "UTC", "yyyy-MM-dd HH:mm:ss")
+    eventData.end_date = formatInTimeZone(endDateTime, "UTC", "yyyy-MM-dd HH:mm:ss")
     eventData.required_skills = selectedSkills != "" ? selectedSkills : []
     props.submitEventForm(eventData)
     props.closeEventForm()
   }
 
-  // Close form when user clicks cancel
   const handleCancel = (e) => {
     e.preventDefault()
     props.closeEventForm()
   }
 
-  // Delete event
   const handleDelete = (e) => {
     e.preventDefault()
     props.deleteEvent()
@@ -74,12 +117,11 @@ function EventForm(props) {
     props.closeEventForm()
   }
 
-  // Show our hide message confirming that you want to delete an event
   const toggleConfirmMsg = () => setShowConfirmMsg(!showConfirmMsg)
   
 
   return (
-    <div> {/*className="flex justify-center items-center h-screen w-screen"*/}
+    <div>
       {showConfirmMsg && 
         <div className="bg-white border-gray-500 border-2 h-fit w-fit p-10 rounded-lg">
           <p className="text-xl font-bold">Are you sure you want to delete this event?: {eventData.event_name}</p>
@@ -114,47 +156,60 @@ function EventForm(props) {
               >
               </textarea>
               
-              <div className="mt-4 flex space-x-1">
-                <label>Start <span className="text-red-500">*</span></label>
-                <div className="border-2 rounded-lg border-gray-500 w-1/3">
-                  <Datepicker 
-                    selectsStart
-                    selected={selectedStartDate} 
-                    onChange={date => setSelectedStartDate(date)}
-                    showMonthDropdown
-                    showYearDropdown
-                    scrollableYearDropdown
-                    scrollableMonthYearDropdown
-                    showTimeSelect
-                    dateFormat="Pp"
-                    startDate={selectedStartDate}
-                    endDate={selectedEndDate}
-                    minDate={new Date()}
-                    onChangeRaw={e => e.preventDefault()}  // Prevent user from typing date and time manually
-                  />
+              <div className="mt-4">
+                {timeError && <p className="text-red-500">{timeError}</p>}
+              <div className="flex space-x-4">
+                <div>
+                  <label>Event Date <span className="text-red-500">*</span></label>
+                  <div className="border-2 rounded-lg border-gray-500 w-fit">
+                    <Datepicker 
+                      selected={selectedDate} 
+                      onChange={date => setSelectedDate(date)}
+                      showMonthDropdown
+                      showYearDropdown
+                      scrollableYearDropdown
+                      scrollableMonthYearDropdown
+                      dateFormat="MM/dd/yyyy"
+                      minDate={new Date()}
+                      onChangeRaw={e => e.preventDefault()}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label>Start Time <span className="text-red-500">*</span></label>
+                  <div className="border-2 rounded-lg border-gray-500 w-fit">
+                    <Datepicker 
+                      selected={startTime} 
+                      onChange={time => setStartTime(time)}
+                      showTimeSelect
+                      showTimeSelectOnly
+                      timeIntervals={15}
+                      timeCaption="Start"
+                      dateFormat="h:mm aa"
+                      onChangeRaw={e => e.preventDefault()}
+                    />
+                  </div>
                 </div>
 
-                <label>End <span className="text-red-500">*</span></label>
-                <div className="border-2 rounded-lg border-gray-500 w-1/3">
-                  <Datepicker 
-                    selectsEnd
-                    selected={selectedEndDate} 
-                    onChange={date => setSelectedEndDate(date)}
-                    showMonthDropdown
-                    showYearDropdown
-                    scrollableYearDropdown
-                    scrollableMonthYearDropdown
-                    showTimeSelect
-                    dateFormat="Pp"
-                    startDate={selectedStartDate}
-                    endDate={selectedEndDate}
-                    minDate={selectedStartDate || new Date()}
-                    onChangeRaw={e => e.preventDefault()}
-                  />
+                <div>
+                  <label>End Time <span className="text-red-500">*</span></label>
+                  <div className="border-2 rounded-lg border-gray-500 w-fit">
+                    <Datepicker 
+                      selected={endTime} 
+                      onChange={time => setEndTime(time)}
+                      showTimeSelect
+                      showTimeSelectOnly
+                      timeIntervals={15}
+                      timeCaption="End"
+                      dateFormat="h:mm aa"
+                      onChangeRaw={e => e.preventDefault()}
+                    />
+                  </div>
                 </div>
               </div>
+              </div>
 
-              <label>Location Name<span className="text-red-500">*</span> </label>
+              <label className="mt-4">Location Name<span className="text-red-500">*</span> </label>
               <input
                 name = "location"  
                 type="text"
@@ -213,7 +268,6 @@ function EventForm(props) {
                   value={eventData.zip_code}
                   onChange={(e) => {
                     const value = e.target.value;
-                    // Allow only digits, up to 5
                     if (/^\d{0,5}$/.test(value)) {
                       handleChange(e)
                     }
@@ -233,7 +287,6 @@ function EventForm(props) {
               {selectedSkills.length > 0 ? selectedSkills.join(', ') : ''}
               </div>
 
-              {/* Dropdown options */}
               {skillsDropdownOpen && (
                   <div className="border-2 border-gray-500 bg-white rounded-xl mt-1 max-h-40 overflow-y-auto p-2 z-10 relative">
                   {skills.map(skill => (
