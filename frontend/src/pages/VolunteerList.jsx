@@ -73,6 +73,7 @@ const VolunteerList = () => {
           </div>
           <VolunteerHistory
             user={selectedVolunteer.user}
+            volunteerName={selectedVolunteer.full_name}
           />
         </div>
       }
