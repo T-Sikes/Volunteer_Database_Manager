@@ -12,57 +12,9 @@ const VolunteerAssignList = (props) => {
   const [eventEndDate, setEventEndDate] = useState(null)
   const [isAvailableMap, setIsAvailableMap] = useState(props.isAvailableMap)
 
-  // useEffect(() => {
-  //   fetchVolunteers()
-  //   fetchVolunteersForEvent(eventID)
-  // },[])
-
   useEffect(() => {
     changeButton()
   },[selectedVolunteer])
-
-  // useEffect(() => {
-  //   if(volunteers.length > 0 && eventStartDate && eventEndDate) {
-  //     volunteers.forEach((volunteer) => checkAvailability(volunteer, eventStartDate, eventEndDate))
-  //   }
-  // }, [volunteers, eventStartDate, eventEndDate])
-
-
-  // Fetch all volunteers
-  // const fetchVolunteers = async() => {
-  //   try{
-  //     const response = await AxiosInstance.get("event/volunteers/")
-  //     const data = response.data
-  //     setVolunteers(data)
-  //   } catch (err) {
-  //     console.log(err)
-  //   }
-  // }
-
-  // Fetch volunteers assigned to this event
-  // const fetchVolunteersForEvent = async(event_id) => {
-  //   try{
-  //     const response = await AxiosInstance.get(`event/${event_id}/volunteers/`)
-  //     const data = response.data
-  //     const ids = data.map(x => x.user_profile_details.id)
-  //     const mp = {}
-  //     ids.forEach((id) => {
-  //       mp[id] = true
-  //     })
-  //     setIsAssignedMap(mp)
-
-  //     const formattedStartDate = format(new Date(props.eventData.start_date), 'eeee, HH:mm').split(", ")
-  //     const formattedEndDate = format(new Date(props.eventData.end_date), 'eeee, HH:mm').split(", ")
-  //     const startDate = {dayOfWeek: formattedStartDate[0], time: formattedStartDate[1]}
-  //     const endDate = {dayOfWeek: formattedEndDate[0], time: formattedEndDate[1]}
-      
-  //     setEventStartDate(startDate)
-  //     setEventEndDate(endDate)
-
-  //   } catch (err) {
-  //     console.log(err)
-  //   }
-  // }
 
   const assignVolunteer = async (eventID, sv) => {
     try{
@@ -98,29 +50,6 @@ const VolunteerAssignList = (props) => {
     setAssignOrUnassign("assign")
   }
 
-  // const checkAvailability = (volunteer, evStartDate, evEndDate) => {
-  //   const availability = volunteer.availability_json
-  //   const eventStartDayOfWeek = (evStartDate.dayOfWeek).toLowerCase()
-  //   const eventStartTime = (evStartDate.time).toLowerCase()
-  //   const eventEndDayOfWeek = (evEndDate.dayOfWeek).toLowerCase()
-  //   const eventEndTime = (evEndDate.time).toLowerCase()
-
-  //   if(!availability[eventStartDayOfWeek].available || !availability[eventEndDayOfWeek].available){
-  //     setIsAvailableMap(prevState => { return {...prevState, [volunteer.id]: false}})
-  //     return
-  //   }
-
-  //   if(availability[eventStartDayOfWeek].start > eventStartTime || availability[eventEndDayOfWeek].end < eventEndTime){
-  //     setIsAvailableMap(prevState => { return {...prevState, [volunteer.id]: false}})
-  //     return
-  //   }
-
-  //   setIsAvailableMap(prevState => { return {...prevState, [volunteer.id]: true}})
-  // }
-
-
-
-
   return (
     <div className="flex flex-col bg-white border-gray-500 border-2 h-fit w-fit p-10 rounded-lg">
       <div>
@@ -149,8 +78,9 @@ const VolunteerAssignList = (props) => {
               <div className="flex justify-between text-lg">
                 <div>
                   <p>{volunteer.full_name} (ID: {volunteer.id}) </p>
-                  <p><span className="font-medium">Skills:</span> {volunteer.skills}</p>
+                  <p><span className="font-medium">Skills:</span> {volunteer.skills?.join(', ') || ""}</p>
                   <p><span className="font-medium">Location:</span> {volunteer.city}, {volunteer.state}, {volunteer.zipcode}</p>
+                  <p><span className="font-medium">Preferences:</span> {volunteer.preferences}</p>
                 </div>
                 {(isAssignedMap[volunteer.id] ?? false) && 
                   <p className="text-green-600"> Assigned </p>

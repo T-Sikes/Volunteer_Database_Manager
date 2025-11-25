@@ -5,6 +5,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import VolunteerAssignList from "../components/VolunteerAssignList.jsx"
 import AxiosInstance from "../components/AxiosInstance.jsx"
 import { format, parse } from "date-fns"
+import EventList from "../components/EventList.jsx"
 
 function EventManagement() {
   
@@ -57,6 +58,10 @@ function EventManagement() {
     } catch (err) {
       console.log(err)
     }
+  }
+
+  const sortEvents = (events) => {
+    return events.sort((a, b) => new Date(b.start) - new Date(a.start));
   }
 
   // Fetch all volunteers
@@ -163,7 +168,7 @@ function EventManagement() {
         event.extendedProps.eventData = data
         event.start = event.extendedProps.eventData.start_date
         event.end = event.extendedProps.eventData.end_date
-        setEventsArray(prevState => [...prevState, event])
+        setEventsArray(prevState => sortEvents([...prevState, event]))
       } catch (err) {
         console.log(err)
       }
@@ -182,7 +187,7 @@ function EventManagement() {
           const modifiedArray = [...prevState]
           const index = modifiedArray.findIndex(item => item.extendedProps.eventData.id == event.extendedProps.eventData.id)
           modifiedArray[index] = event
-          return modifiedArray  
+          return sortEvents(modifiedArray)  
       })
       } catch (err) {
         console.log(err)
@@ -194,9 +199,9 @@ function EventManagement() {
     const pk = clickedEvent.extendedProps.eventData.id
     try{
       const response = await AxiosInstance.delete(`event/${pk}/`)
-      setEventsArray(prevState => prevState.filter(
+      setEventsArray(prevState => sortEvents(prevState.filter(
         event => event.extendedProps.eventData.id !== pk
-      ))
+      )))
     } catch (err) {
       console.log(err)
     }
@@ -288,10 +293,13 @@ function EventManagement() {
   }
 
   // Function for showing showing event form when an event is clicked
-  const eventClicked = info => {
-    setClickedEvent(info.event)
+  const eventClicked = (e, fullCalendarEvent = true) => {
+    if(fullCalendarEvent)
+      e = e.event
+
+    setClickedEvent(e)
     fetchVolunteers()
-    fetchVolunteersForEvent(info.event.extendedProps.eventData)
+    fetchVolunteersForEvent(e.extendedProps.eventData)
     toggleEventForm()
   }
 
@@ -428,9 +436,17 @@ function EventManagement() {
           height="100%"
           expandRows={true}
           eventClick={eventClicked}
-          eventDisplay="block"
+          eventDisplay="list-item"
           timeZone="local"
+          eventTimeFormat={{ 
+            hour: 'numeric',
+            minute: '2-digit',
+            meridiem: "short"
+          }}
         />
+      </div>
+      <div className="mt-15">
+        <EventList eventsArray={eventsArray} eventClicked={eventClicked}/>
       </div>
     </div>
   )

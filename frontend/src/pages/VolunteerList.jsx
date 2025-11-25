@@ -127,15 +127,18 @@ const VolunteerList = () => {
             <div className="flex flex-col bg-white border-gray-500 border-2 h-fit w-1/3 p-10 rounded-lg text-lg">
               <p> <span className="font-bold">Name:</span> {selectedVolunteer.full_name}</p>
               <p> <span className="font-bold">ID:</span> {selectedVolunteer.id}</p>
-              <p> <span className="font-bold">Location:</span> {selectedVolunteer.city}, {selectedVolunteer.state}</p>
+              <p> <span className="font-bold">Address:</span> {selectedVolunteer.address}</p>
+              <p> <span className="font-bold">City:</span> {selectedVolunteer.city}</p>
+              <p> <span className="font-bold">State:</span> {selectedVolunteer.state}</p>
+              <p> <span className="font-bold">Zip Code:</span> {selectedVolunteer.zipcode}</p>
+              <p> <span className="font-bold">Skills:</span> {selectedVolunteer.skills?.join(', ') || ""}</p>
+              <p> <span className="font-bold">Preferences:</span> {selectedVolunteer.preferences}</p>
               <div>
                 <span className="font-bold">Availability:</span>
                 <pre className="whitespace-pre-wrap mt-1 ml-5 font-sans">
                   {selectedVolunteer.availability_json && formatAvailability(selectedVolunteer.availability_json)}
                 </pre>
               </div>
-              <p> <span className="font-bold">Skills:</span> {selectedVolunteer.skills}</p>
-              <p> <span className="font-bold">Preferences:</span> {selectedVolunteer.preferences}</p>
               <div className="flex justify-around mt-2">
                 <button 
                   onClick={() => {
@@ -172,7 +175,9 @@ const VolunteerList = () => {
                   toggleInfo(volunteer.id)
                 }}
               >
+                <div className="py-3">
                 <p className="text-lg">{volunteer.full_name} (ID: {volunteer.id})</p>
+                </div>
                 <hr/>
               </div>
               ))}
