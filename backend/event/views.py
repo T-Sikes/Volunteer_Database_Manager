@@ -3,9 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
 from volunteer_db.models import EventDetails, UserProfile, VolunteerHistory, UserCredentials, Notification
-from .serializers import VolunteerSerializer, MatchRequestSerializer, EventDetailsSerializer, VolunteerHistorySerializer
+from .serializers import VolunteerSerializer, MatchRequestSerializer, EventDetailsSerializer, VolunteerHistorySerializer, NotificationSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import PermissionDenied
+from volunteer_db.utils import create_notification
 
 
 # add "@permission_classes([IsAuthenticated])" above your endpoints if a user needs to be logged in to make this API call. More often than not, they will need to be
@@ -91,9 +92,10 @@ def create_event(request):
     data = request.data
     serializer = EventDetailsSerializer(data=data)
     if serializer.is_valid():
-        serializer.save()
+        event = serializer.save()
+        create_notification(recipient=UserProfile.objects.get(user=request.user), message=f"Event '{event.event_name}' created successfully.")
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 @api_view(["PUT", "DELETE"])
 @permission_classes([IsAuthenticated])
@@ -107,20 +109,24 @@ def update_or_delete_event(request, pk):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == "DELETE":
+        event_name = event.event_name
         event.delete()
+        user_profile = UserProfile.objects.get(user=request.user)
+        create_notification(recipient=user_profile, message=f"Event '{event_name}' deleted successfully.")
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     elif request.method == "PUT":
         data = request.data
         serializer = EventDetailsSerializer(event, data=data)
         if serializer.is_valid():
-            serializer.save()
+            updated_event = serializer.save()
+            user_profile = UserProfile.objects.get(user=request.user)
+            create_notification(recipient=user_profile, message=f"Event '{updated_event.event_name}' updated successfully.")
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-matches = []
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def match_volunteers(request):
     serializer = MatchRequestSerializer(data=request.data)
     if not serializer.is_valid():
@@ -134,16 +140,11 @@ def match_volunteers(request):
 
     try:
         volunteer_profile = UserProfile.objects.select_related("user").get(full_name__iexact=name)
-        volunteer = {
-            "id": volunteer_profile.user.id,
-            "name": volunteer_profile.full_name,
-            "skills": volunteer_profile.skills if volunteer_profile.skills else []
-        }
     except UserProfile.DoesNotExist:
         return Response({"error": "Volunteer not found."}, status=status.HTTP_404_NOT_FOUND)
 
     if selected_event_name:
-        event_obj, created = EventDetails.objects.get_or_create(
+        event_obj, _ = EventDetails.objects.get_or_create(
             event_name=selected_event_name,
             defaults={
                 "location": posted_location or "Unknown",
@@ -153,88 +154,102 @@ def match_volunteers(request):
                 "end_date": posted_event_date or datetime.now()
             }
         )
+        match_type = "manual"
 
-        matched_skills = [s for s in _normalize_list(event_obj.required_skills) if s in _normalize_list(volunteer["skills"])]
-        match_entry = {
-            "volunteerName": volunteer["name"],
-            "eventName": event_obj.event_name,
-            "eventDate": event_obj.start_date.isoformat(),
-            "location": event_obj.location,
-            "matchedSkills": matched_skills,
-            "matchType": "manual",
-            "timestamp": datetime.now().isoformat()
+    else:
+        all_events = EventDetails.objects.all()
+        scored_events = []
+        volunteer_skills = _normalize_list(volunteer_profile.skills if volunteer_profile.skills else [])
+        for e in all_events:
+            event_dict = {
+                "id": e.id,
+                "name": e.event_name,
+                "location": e.location,
+                "requiredSkills": e.required_skills if e.required_skills else [],
+                "urgency": e.urgency,
+                "eventDate": e.start_date.isoformat()
+            }
+            score = _score_event_for_volunteer(event_dict, {"skills": volunteer_skills})
+            if score >= 10:
+                scored_events.append((score, event_dict))
+        if not scored_events:
+            return Response({"message": "No matching events found."}, status=status.HTTP_200_OK)
+        scored_events.sort(key=lambda se: (-se[0], se[1].get("eventDate", "")))
+        best_match = scored_events[0][1]
+        event_obj = EventDetails.objects.get(event_name=best_match["name"])
+        match_type = "auto"
+
+    history_entry, created = VolunteerHistory.objects.get_or_create(
+        user=volunteer_profile.user,
+        event=event_obj,
+        participation_date=event_obj.start_date.date(),
+        defaults={
+            "user_profile": volunteer_profile,
+            "match_type": match_type
         }
-
-        Notification.objects.create(
-            recipient=volunteer_profile.user,
-            message=f"You were manually matched to event '{event_obj.event_name}' on {event_obj.start_date}"
-        )
-
-        matches.append(match_entry)
-        return Response(match_entry, status=status.HTTP_200_OK)
-
-    all_events = EventDetails.objects.all()
-    scored_events = []
-
-    for e in all_events:
-        event_dict = {
-            "id": e.id,
-            "name": e.event_name,
-            "location": e.location,
-            "requiredSkills": e.required_skills if e.required_skills else [],
-            "urgency": e.urgency,
-            "eventDate": e.start_date.isoformat()
-        }
-        score = _score_event_for_volunteer(event_dict, volunteer)
-        if score >= 10:
-            scored_events.append((score, event_dict))
-
-    if not scored_events:
-        return Response({"message": "No matching events found."}, status=status.HTTP_200_OK)
-
-    scored_events.sort(key=lambda se: (-se[0], se[1].get("eventDate", "")))
-    best_match = scored_events[0][1]
-
-    match_entry = {
-        "volunteerName": volunteer["name"],
-        "eventName": best_match["name"],
-        "eventDate": best_match["eventDate"],
-        "location": best_match["location"],
-        "matchedSkills": [s for s in best_match.get("requiredSkills", []) if s in _normalize_list(volunteer["skills"])],
-        "matchType": "auto",
-        "timestamp": datetime.now().isoformat()
-    }
-
-    Notification.objects.create(
-        recipient=volunteer_profile.user,
-        message=f"You were automatically matched to event '{best_match['name']}' on {best_match['eventDate']}"
     )
 
-    matches.append(match_entry)
-    return Response(match_entry, status=status.HTTP_200_OK)
+    create_notification(
+        recipient=volunteer_profile,
+        message=f"You were {'manually' if match_type=='manual' else 'automatically'} matched to event '{event_obj.event_name}' on {event_obj.start_date}"
+    )
+
+    return Response({
+        "volunteerName": volunteer_profile.full_name,
+        "eventName": event_obj.event_name,
+        "eventDate": event_obj.start_date.isoformat(),
+        "location": event_obj.location,
+        "matchType": match_type,
+        "timestamp": history_entry.timestamp.isoformat()
+    }, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def get_all_matches(request):
-    return Response(matches, status=status.HTTP_200_OK)
+    history = VolunteerHistory.objects.select_related("user", "event").all()
+    data = []
+    for h in history:
+        try:
+            profile = UserProfile.objects.get(user=h.user)
+            volunteer_name = profile.full_name
+        except UserProfile.DoesNotExist:
+            volunteer_name = h.user.username
+
+        data.append({
+            "volunteerName": volunteer_name,
+            "eventName": h.event.event_name,
+            "eventDate": h.event.start_date.isoformat(),
+            "location": h.event.location,
+            "matchType": h.match_type,
+            "timestamp": h.timestamp.isoformat()
+        })
+    return Response(data, status=status.HTTP_200_OK)
 
 @api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
 def delete_match(request, volunteer_name):
-    global matches
-    volunteer_name_lower = volunteer_name.strip().lower()
-
-    original_length = len(matches)
-    matches = [m for m in matches if m.get("volunteerName", "").strip().lower() != volunteer_name_lower]
-    
-    if len(matches) < original_length:
-        return Response({"message": f"Match for {volunteer_name} removed successfully."}, status=status.HTTP_200_OK)
-    else:
-        return Response({"error": f"No match found for volunteer: {volunteer_name}"}, status=status.HTTP_404_NOT_FOUND)
+    try:
+        volunteer_profile = UserProfile.objects.get(full_name__iexact=volunteer_name)
+        deleted, _ = VolunteerHistory.objects.filter(user=volunteer_profile.user).delete()
+        if deleted:
+            return Response({"message": f"Match for {volunteer_name} removed successfully."}, status=200)
+        else:
+            return Response({"error": f"No match found for {volunteer_name}"}, status=404)
+    except UserProfile.DoesNotExist:
+        return Response({"error": "Volunteer not found."}, status=404)
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def get_notifications(request):
-    notifications = Notification.objects.select_related("recipient").all().order_by("-timestamp")
-    data = [{"to": n.recipient.username, "message": n.message, "timestamp": n.timestamp.isoformat()} for n in notifications]
-    return Response(data)
+    try:
+        user_profile = UserProfile.objects.get(user=request.user)
+        notifications = Notification.objects.filter(
+            recipient=user_profile
+        ).order_by("-timestamp")
+        serializer = NotificationSerializer(notifications, many=True)
+        return Response(serializer.data)
+    except UserProfile.DoesNotExist:
+        return Response({"error": "User profile not found."}, status=404)
 
 @api_view(["POST"])
 def send_notification(request):
@@ -244,11 +259,11 @@ def send_notification(request):
         return Response({"error": "Both 'to' and 'message' are required."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        user = UserCredentials.objects.get(username=to_username)
-    except UserCredentials.DoesNotExist:
+        user_profile = UserProfile.objects.get(user__username=to_username)
+    except UserProfile.DoesNotExist:
         return Response({"error": "Recipient not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    Notification.objects.create(recipient=user, message=message)
+    create_notification(recipient=user_profile, message=message)
     return Response({"status": "sent"}, status=status.HTTP_201_CREATED)
 
 
@@ -261,9 +276,12 @@ def assign_volunteer(request):
     data = request.data
     serializer = VolunteerHistorySerializer(data=data)
     if serializer.is_valid():
-        serializer.save()
+        assignment = serializer.save()
+        create_notification(
+            recipient=assignment.user_profile,
+            message=f"You have been assigned to event '{assignment.event.event_name}'."
+        )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
@@ -272,10 +290,15 @@ def unassign_volunteer(request, event, user, user_profile):
         raise PermissionDenied("You do not have permission to do this")
     
     try:
-        assigned_event = VolunteerHistory.objects.filter(event=event, user=user, user_profile=user_profile)
+        assigned_event = VolunteerHistory.objects.get(event=event, user=user, user_profile=user_profile)
     except VolunteerHistory.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    
+
+    create_notification(
+        recipient=assigned_event.user_profile,
+        message=f"You have been unassigned from event '{assigned_event.event.event_name}'."
+    )
+
     assigned_event.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
 

@@ -1,9 +1,11 @@
 from rest_framework import serializers
 from volunteer_db.models import UserProfile, EventDetails, VolunteerHistory
 from user.serializers import UserProfileSerializerBasic
+from .models import Notification
 
 
 class VolunteerSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source="full_name")
     class Meta:
         model = UserProfile
         fields = "__all__"
@@ -37,3 +39,9 @@ class VolunteerHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = VolunteerHistory
         fields = "__all__"
+        
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ["id", "recipient", "message", "timestamp"]
+        read_only_fields = ["id", "timestamp"]
