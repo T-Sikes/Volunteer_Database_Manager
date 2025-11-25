@@ -247,55 +247,54 @@ def get_events(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def export_reports_csv(request):
-    """Export both volunteers and events data in one CSV"""
+    """Export detailed volunteers and events data in one CSV"""
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="volunteer_reports.csv"'
     
     writer = csv.writer(response)
     
-    # SECTION 1: Volunteers and their participation history
-    writer.writerow(['VOLUNTEERS AND PARTICIPATION HISTORY'])
-    writer.writerow(['Name', 'Email', 'City', 'State', 'Total Events', 'Total Hours', 'Last Participation'])
+    # SECTION 1: Volunteers and their detailed participation history
+    writer.writerow(['VOLUNTEERS AND DETAILED PARTICIPATION HISTORY'])
+    writer.writerow(['Volunteer Name', 'Event Name', 'Event Date', 'Hours Served', 'Status', 'Participation Date'])
     writer.writerow([])
     
-    profiles = UserProfile.objects.all().select_related('user')
-    for profile in profiles:
-        history = VolunteerHistory.objects.filter(user=profile.user, status='completed')
-        events_count = history.count()
-        total_hours = history.aggregate(Sum('hours_served'))['hours_served__sum'] or 0
-        last_participation = history.order_by('-participation_date').first()
-        last_date = last_participation.participation_date.strftime('%Y-%m-%d') if last_participation else 'Never'
-        
+    # Get all volunteer history records with related data
+    volunteer_history = VolunteerHistory.objects.all().select_related('user_profile', 'event').order_by('user_profile__full_name', 'event__start_date')
+    
+    for record in volunteer_history:
         writer.writerow([
-            profile.full_name,
-            profile.user.email,
-            profile.city,
-            profile.state,
-            events_count,
-            total_hours,
-            last_date
+            record.user_profile.full_name,
+            record.event.event_name,
+            record.event.start_date.strftime('%Y-%m-%d'),
+            record.hours_served,
+            record.status,
+            record.participation_date.strftime('%Y-%m-%d')
         ])
     
     writer.writerow([])
     writer.writerow([])
     
-    # SECTION 2: Event details and volunteer assignments
+    # SECTION 2: Event details with volunteer names
     writer.writerow(['EVENT DETAILS AND VOLUNTEER ASSIGNMENTS'])
-    writer.writerow(['Event Name', 'Date', 'Location', 'Urgency', 'Volunteers Assigned', 'Total Hours'])
+    writer.writerow(['Event Name', 'Date', 'Location', 'Urgency', 'Volunteer Names', 'Total Hours'])
     writer.writerow([])
     
     events = EventDetails.objects.all()
     for event in events:
-        event_history = VolunteerHistory.objects.filter(event=event, status='completed')
-        volunteer_count = event_history.count()
-        total_hours = event_history.aggregate(Sum('hours_served'))['hours_served__sum'] or 0
+        event_history = VolunteerHistory.objects.filter(event=event).select_related('user_profile')
+        volunteer_names = []
+        total_hours = 0
+        
+        for record in event_history:
+            volunteer_names.append(record.user_profile.full_name)
+            total_hours += record.hours_served
         
         writer.writerow([
             event.event_name,
             event.start_date.strftime('%Y-%m-%d'),
             f"{event.location}, {event.city}, {event.state}",
             event.urgency,
-            volunteer_count,
+            ', '.join(volunteer_names) if volunteer_names else 'No volunteers',
             total_hours
         ])
     
@@ -304,7 +303,7 @@ def export_reports_csv(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def export_reports_pdf(request):
-    """Export both volunteers and events data in a proper PDF"""
+    """Export detailed volunteers and events data in a proper PDF"""
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="volunteer_reports.pdf"'
     
@@ -319,90 +318,104 @@ def export_reports_pdf(request):
         parent=styles['Heading1'],
         fontSize=16,
         spaceAfter=30,
-        alignment=1,  # Center aligned
+        alignment=1,
     )
     elements.append(Paragraph("VOLUNTEER MANAGEMENT REPORTS", title_style))
     elements.append(Paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", styles['Normal']))
     elements.append(Spacer(1, 20))
     
-    # SECTION 1: Volunteers and their participation history
-    elements.append(Paragraph("VOLUNTEERS AND PARTICIPATION HISTORY", styles['Heading2']))
+    # SECTION 1: Volunteers and their detailed participation history
+    elements.append(Paragraph("VOLUNTEERS AND DETAILED PARTICIPATION HISTORY", styles['Heading2']))
     elements.append(Spacer(1, 10))
     
-    # Volunteer data for table
-    volunteer_data = [['Name', 'Email', 'Location', 'Events', 'Total Hours', 'Last Participation']]
+    # Volunteer history data for table
+    volunteer_data = [['Volunteer Name', 'Event Name', 'Event Date', 'Hours', 'Status']]
     
-    profiles = UserProfile.objects.all().select_related('user')
-    for profile in profiles:
-        history = VolunteerHistory.objects.filter(user=profile.user, status='completed')
-        events_count = history.count()
-        total_hours = history.aggregate(Sum('hours_served'))['hours_served__sum'] or 0
-        last_participation = history.order_by('-participation_date').first()
-        last_date = last_participation.participation_date.strftime('%Y-%m-%d') if last_participation else 'Never'
-        
+    volunteer_history = VolunteerHistory.objects.all().select_related('user_profile', 'event').order_by('user_profile__full_name', 'event__start_date')
+    
+    for record in volunteer_history:
         volunteer_data.append([
-            profile.full_name,
-            profile.user.email,
-            f"{profile.city}, {profile.state}",
-            str(events_count),
-            str(total_hours),
-            last_date
+            record.user_profile.full_name,
+            record.event.event_name,
+            record.event.start_date.strftime('%Y-%m-%d'),
+            str(record.hours_served),
+            record.status.capitalize()
         ])
     
-    # Create volunteer table
-    volunteer_table = Table(volunteer_data, colWidths=[1.5*inch, 2*inch, 1.5*inch, 0.7*inch, 0.8*inch, 1.2*inch])
-    volunteer_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('FONTSIZE', (0, 1), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
-    ]))
+    # Create volunteer history table
+    if len(volunteer_data) > 1:
+        volunteer_table = Table(volunteer_data, colWidths=[1.5*inch, 2*inch, 1*inch, 0.6*inch, 0.8*inch])
+        volunteer_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(volunteer_table)
+    else:
+        elements.append(Paragraph("No volunteer participation records found.", styles['Normal']))
     
-    elements.append(volunteer_table)
     elements.append(Spacer(1, 30))
     
-    # SECTION 2: Event details and volunteer assignments
+    # SECTION 2: Event details with volunteer names - FIXED FORMATTING
     elements.append(Paragraph("EVENT DETAILS AND VOLUNTEER ASSIGNMENTS", styles['Heading2']))
     elements.append(Spacer(1, 10))
     
-    # Event data for table
-    event_data = [['Event Name', 'Date', 'Location', 'Urgency', 'Volunteers', 'Total Hours']]
+    # Event data for table - using Paragraph for wrapping
+    event_data = [[
+        Paragraph('Event Name', styles['Normal']),
+        Paragraph('Date', styles['Normal']),
+        Paragraph('Location', styles['Normal']),
+        Paragraph('Urgency', styles['Normal']),
+        Paragraph('Volunteer Names', styles['Normal']),
+        Paragraph('Total Hours', styles['Normal'])
+    ]]
     
     events = EventDetails.objects.all()
     for event in events:
-        event_history = VolunteerHistory.objects.filter(event=event, status='completed')
-        volunteer_count = event_history.count()
-        total_hours = event_history.aggregate(Sum('hours_served'))['hours_served__sum'] or 0
+        event_history = VolunteerHistory.objects.filter(event=event).select_related('user_profile')
+        volunteer_names = []
+        total_hours = 0
+        
+        for record in event_history:
+            volunteer_names.append(record.user_profile.full_name)
+            total_hours += record.hours_served
+        
+        # Use Paragraph for volunteer names to enable text wrapping
+        volunteer_display = ', '.join(volunteer_names) if volunteer_names else 'No volunteers'
         
         event_data.append([
-            event.event_name,
-            event.start_date.strftime('%Y-%m-%d'),
-            f"{event.city}, {event.state}",
-            event.urgency.capitalize() if event.urgency else 'Not set',
-            str(volunteer_count),
-            str(total_hours)
+            Paragraph(event.event_name, styles['Normal']),
+            Paragraph(event.start_date.strftime('%Y-%m-%d'), styles['Normal']),
+            Paragraph(f"{event.city}, {event.state}", styles['Normal']),
+            Paragraph(event.urgency.capitalize() if event.urgency else 'Not set', styles['Normal']),
+            Paragraph(volunteer_display, styles['Normal']),  # This will wrap!
+            Paragraph(str(total_hours), styles['Normal'])
         ])
     
-    # Create event table
-    event_table = Table(event_data, colWidths=[2*inch, 1*inch, 1.5*inch, 1*inch, 0.8*inch, 0.8*inch])
-    event_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.lightblue),
-        ('FONTSIZE', (0, 1), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)
-    ]))
-    
-    elements.append(event_table)
+    # Create event table with better column widths
+    if len(event_data) > 1:
+        event_table = Table(event_data, colWidths=[1.3*inch, 0.7*inch, 1.0*inch, 0.7*inch, 2.0*inch, 0.7*inch])
+        event_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.lightblue),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP')  # Align to top for wrapped text
+        ]))
+        elements.append(event_table)
+    else:
+        elements.append(Paragraph("No events found.", styles['Normal']))
     
     # Build PDF
     doc.build(elements)
