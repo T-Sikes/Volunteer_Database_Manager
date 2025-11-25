@@ -9,6 +9,7 @@ const AdminPortalLayout = () => {
           <div className="flex justify-evenly pb-6">
             <NavLink to="volunteers"><span className="border-2 rounded-md p-1 text-white">Volunteers</span></NavLink>
             <NavLink to="event-management"><span className="border-2 rounded-md p-1 text-white">Event Management</span></NavLink>
+            <NavLink to="volunteer-matching"><span className="border-2 rounded-md p-1">Volunteer Matching</span></NavLink>
           </div>
         </nav>
       </div>
