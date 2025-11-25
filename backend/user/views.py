@@ -170,6 +170,13 @@ def get_volunteer_history(request, username):
     serializer = VolunteerRecordSerializer(history_qs, many=True)
     return Response(serializer.data)
 
+
+@api_view(['GET'])
+def get_volunteer_history_from_user_id(request, user_id):
+    history_qs = VolunteerHistory.objects.filter(user_id=user_id)
+    serializer = VolunteerRecordSerializer(history_qs, many=True)
+    return Response(serializer.data)
+
 @api_view(['POST'])
 def save_volunteer_record(request, username):
     user = get_object_or_404(UserCredentials, username=username)

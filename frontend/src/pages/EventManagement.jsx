@@ -298,7 +298,7 @@ function EventManagement() {
   return (
     <div className="h-screen w-screen">
       {(isScheduleConflict) && 
-        <div className="flex absolute justify-center items-center top-0 left-0 z-10 bg-[rgba(0,0,0,0.5)] min-h-full min-w-full">
+        <div className="flex justify-center items-start py-10 fixed inset-0 z-10 bg-[rgba(0,0,0,0.5)] overflow-y-auto">
           <div className="bg-white border-gray-500 border-2 h-fit w-3/5 p-10 rounded-lg">
             <p className="text-xl"> Changing the event to this date and time will result in the following volunteers 
               being unsassigned because they are unavailable. Do you wish to proceed?:</p>
@@ -362,8 +362,8 @@ function EventManagement() {
       }
       {/* Only show event form if showEventForm is true */}
       {showEventForm && 
-        <div className="flex absolute justify-center items-center top-0 left-0 z-10 bg-[rgba(0,0,0,0.5)] min-h-full min-w-full">
-          <div className="flex items-start">
+        <div className="flex justify-center items-start py-10 fixed inset-0 z-10 bg-[rgba(0,0,0,0.5)] overflow-y-auto">
+            <div className="flex items-start">
             <EventForm 
               openedEvent={clickedEvent ? clickedEvent.extendedProps.eventData : blankEvent} 
               submitEventForm={getEventFormData} 
@@ -391,13 +391,13 @@ function EventManagement() {
                 </div>
               </div>
             }
-          </div>
+            </div>
         </div>
       }
       {/* Volunteer assignment pop up */}
       {showVolunteerAssign &&
-        <div className="absolute inset-0 z-10 bg-[rgba(0,0,0,0.5)] h-screen w-screen">
-          <div className="absolute inset-0 m-auto h-fit w-fit">
+        <div className="flex justify-center items-start py-10 fixed inset-0 z-10 bg-[rgba(0,0,0,0.5)] overflow-y-auto">
+          <div className="h-fit w-fit">
             <VolunteerAssignList
               eventID={clickedEvent.extendedProps.eventData.id}
               eventData={clickedEvent.extendedProps.eventData}
@@ -409,7 +409,18 @@ function EventManagement() {
           </div>
         </div>
       }
-      <div className="h-[89%] w-screen px-5 relative z-0">
+      <div className="flex justify-center h-fit mt-3">
+        <button 
+          onClick={() => {
+            setClickedEvent(null) // Whenever a user clicks on "Add Event" there is no clicked event
+            toggleEventForm()
+          }}
+          className="!bg-[#3fA2A5] hover:!bg-[#203e3f] text-white"
+        >
+          <span className="text-2xl">+</span> Add Event
+        </button>
+      </div>  
+      <div className="h-[80%] w-screen px-20 relative z-0">
         <FullCalendar
           plugins={[ dayGridPlugin ]}
           initialView="dayGridMonth"
@@ -421,17 +432,6 @@ function EventManagement() {
           timeZone="local"
         />
       </div>
-      <div className="flex justify-center h-fit mt-3">
-        <button 
-          onClick={() => {
-            setClickedEvent(null) // Whenever a user clicks on "Add Event" there is no clicked event
-            toggleEventForm()
-          }}
-          className="!bg-[#3fA2A5] hover:!bg-[#203e3f] text-white"
-        >
-          Add Event
-        </button>
-      </div>  
     </div>
   )
 }

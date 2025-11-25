@@ -15,6 +15,7 @@ function EventForm(props) {
   const [selectedSkills, setSelectedSkills] = useState(props.openedEvent.required_skills)
   const [skillsDropdownOpen, setSkillsDropdownOpen] = useState(false);
   const [showConfirmMsg, setShowConfirmMsg] = useState(false);
+  const [noSelectedSkills, setNoSelectedSkills] = useState(false)
   const formRef = useRef(null)
   
   // Updates event object whenever form data changes
@@ -31,10 +32,21 @@ function EventForm(props) {
   const handleSave = (e) => {
     e.preventDefault()
     const form = formRef.current;
+    if (selectedSkills.length > 0){
+      setNoSelectedSkills(false)
+    }
 
     if (!form.checkValidity()) {
       form.reportValidity();
+      if (selectedSkills.length == 0){
+        setNoSelectedSkills(true)
+      }
       return;
+    }
+    
+    if (selectedSkills.length == 0){
+      setNoSelectedSkills(true)
+      return
     }
 
     eventData.start_date = formatInTimeZone(selectedStartDate, "UTC", "yyyy-MM-dd HH:mm:ss")
@@ -92,12 +104,13 @@ function EventForm(props) {
                 maxLength="200"
               />
 
-              <label>Description</label>
+              <label>Description<span className="text-red-500">*</span></label>
               <textarea 
                 name="description"
                 value={eventData.description}
                 onChange={handleChange}
                 className="border-2 rounded-lg border-gray-500"
+                required
               >
               </textarea>
               
@@ -141,7 +154,7 @@ function EventForm(props) {
                 </div>
               </div>
 
-              <label>Location Name </label>
+              <label>Location Name<span className="text-red-500">*</span> </label>
               <input
                 name = "location"  
                 type="text"
@@ -149,6 +162,7 @@ function EventForm(props) {
                 onChange={handleChange}
                 className="border-2 rounded-lg border-gray-500"
                 maxLength="200"
+                required
               />
 
               <label>Address <span className="text-red-500">*</span></label>
@@ -210,7 +224,8 @@ function EventForm(props) {
                 />
               </div>
 
-              <label>Required Skills</label>
+              <label>Required Skills <span className="text-red-500">*</span></label>
+              {noSelectedSkills && <p className="text-red-500">Select at least 1 required skill</p>}
               <div 
                 className="border-2 rounded-xl border-gray-500 p-2 bg-white cursor-pointer text-black max-w-[600px]"
                 onClick={() => setSkillsDropdownOpen(!skillsDropdownOpen)}
@@ -248,7 +263,6 @@ function EventForm(props) {
                 className="border-2 rounded-lg border-gray-500"
                 required
               >
-                <option value="" selected disabled hidden></option>
                 <option selected value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
