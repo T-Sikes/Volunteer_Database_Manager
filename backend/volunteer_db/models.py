@@ -32,18 +32,23 @@ def validate_is_list(value):
 # =========================
 
 class UserCredentialsManager(BaseUserManager):
-    def create_user(self, username, password=None, **extra_fields):
-        if not username:
-            raise ValueError("Users must have a username.")
-        user = self.model(username=username, **extra_fields)
+    def create_user(self, email , password=None, **extra_fields):
+        if not email:
+            raise ValueError("Users must have a email.")
+        email = self.normalize_email(email) # normalizes email, ex: TEST@email.com and test@email.com will be considered the same
+        # Set username to email if not provided
+        if 'username' not in extra_fields or not extra_fields['username']:
+            extra_fields['username'] = email
+        user = self.model(email=email, **extra_fields)
+
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, password=None, **extra_fields):
+    def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        return self.create_user(username, password, **extra_fields)
+        return self.create_user(email, password, **extra_fields)
 
 
 # =========================
@@ -51,18 +56,18 @@ class UserCredentialsManager(BaseUserManager):
 # =========================
 
 class UserCredentials(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(unique=True, null=True, blank=True)
+    username = models.CharField(max_length=150, unique=True, null=True, blank=True)
+    email = models.EmailField(unique=True,max_length=150)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
     objects = UserCredentialsManager()
 
-    USERNAME_FIELD = 'username'
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
     def __str__(self):
-        return self.username
+        return self.email
     
     # note AbstractBaseUser is built in django paramater that creates a hashed password field 
     # this hashed password should not be directly accesed. 
