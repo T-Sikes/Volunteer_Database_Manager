@@ -3,12 +3,12 @@ import { NavLink, Outlet } from "react-router-dom"
 const AdminPortalLayout = () => {
   return (
     <div>
-      <div className="fixed top-0 z-5 bg-white w-screen">
-        <h1 className="text-center">Admin Portal</h1>
-        <nav className="mt-5">
-          <div className="flex justify-around pb-2">
-            <NavLink to="volunteers"><span className="border-2 rounded-md p-1">Volunteers</span></NavLink>
-            <NavLink to="event-management"><span className="border-2 rounded-md p-1">Event Management</span></NavLink>
+      <div className="fixed top-0 z-10 bg-[#3fA2A5] w-screen">
+        <p className="text-center text-white text-4xl">Admin Portal</p>
+        <nav className="mt-3">
+          <div className="flex justify-evenly pb-6">
+            <NavLink to="volunteers"><span className="border-2 rounded-md p-1 text-white">Volunteers</span></NavLink>
+            <NavLink to="event-management"><span className="border-2 rounded-md p-1 text-white">Event Management</span></NavLink>
           </div>
         </nav>
       </div>

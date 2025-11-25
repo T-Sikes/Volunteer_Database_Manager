@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import AxiosInstance from "../components/AxiosInstance"
 import { parse, format } from 'date-fns';
+import VolunteerHistory from './VolunteerHistory';
 
 const VolunteerList = () => {
   const [volunteers, setVolunteers] = useState([])
   const [showInfo, setShowInfo] = useState(false)
   const [selectedVolunteer, setSelectedVolunteer] = useState({})
+  const [showVolunteerHistory, setShowVolunteerHistory] = useState(false)
 
   // Show inforrmation for a specific volunteer
   const toggleInfo = id => {
@@ -52,6 +54,11 @@ const VolunteerList = () => {
 
   return (
     <div className="min-h-screen min-w-screen flex justify-center">
+      {showVolunteerHistory && 
+        <VolunteerHistory
+        
+        />
+      }
 
       {showInfo && 
         <div className="absolute inset-0 z-10 bg-[rgba(0,0,0,0.5)] min-h-screen min-w-screen">
