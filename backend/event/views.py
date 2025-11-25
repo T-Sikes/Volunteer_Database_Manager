@@ -84,6 +84,10 @@ def get_volunteers(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_event(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied("You do not have permission to do this")
+    
+    
     data = request.data
     serializer = EventDetailsSerializer(data=data)
     if serializer.is_valid():
@@ -94,6 +98,9 @@ def create_event(request):
 @api_view(["PUT", "DELETE"])
 @permission_classes([IsAuthenticated])
 def update_or_delete_event(request, pk):
+    if not request.user.is_superuser:
+        raise PermissionDenied("You do not have permission to do this")
+    
     try:
         event = EventDetails.objects.get(pk=pk)
     except EventDetails.DoesNotExist:
@@ -249,12 +256,29 @@ def send_notification(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def assign_volunteer(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied("You do not have permission to do this")
+    
     data = request.data
     serializer = VolunteerHistorySerializer(data=data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def unassign_volunteer(request, event, user, user_profile):
+    if not request.user.is_superuser:
+        raise PermissionDenied("You do not have permission to do this")
+    
+    try:
+        assigned_event = VolunteerHistory.objects.filter(event=event, user=user, user_profile=user_profile)
+    except VolunteerHistory.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    assigned_event.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

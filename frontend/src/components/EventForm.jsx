@@ -272,7 +272,7 @@ function EventForm(props) {
                 onClick={showVolunteerAssign} 
                 className="!bg-[#3fA2A5] text-white hover:!bg-[#203e3f]"
                 >
-                  Assign Volunteers
+                  Manage Assignments
                 </button>
               </div>
             }

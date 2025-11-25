@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import get_events, get_volunteers, match_volunteers, get_all_matches, get_notifications, send_notification, create_event, update_or_delete_event, delete_match, assign_volunteer, get_user_events, get_volunteers_for_event
+from .views import get_events, get_volunteers, match_volunteers, get_all_matches, get_notifications, send_notification, create_event, update_or_delete_event, delete_match, assign_volunteer, get_user_events, get_volunteers_for_event, unassign_volunteer
 
 urlpatterns = [
     path("", get_events, name="get_events"),
@@ -14,5 +14,6 @@ urlpatterns = [
     path("assign/", assign_volunteer, name="assign_volunteer"),
     path("assigned-events/", get_user_events, name="get_user_events" ),
     path("<int:event_id>/volunteers/", get_volunteers_for_event, name="get_volunteers_for_event"),
+    path("unassign/<int:event>/<int:user>/<int:user_profile>", unassign_volunteer, name="unassign_volunteer"),
     path("api-auth/", include("rest_framework.urls")) # For being able to log in and log out when testing API calls using the Django Rest Framework UI
 ]
