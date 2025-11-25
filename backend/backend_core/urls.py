@@ -22,4 +22,5 @@ urlpatterns = [
     path("event/", include("event.urls")),
     path("user/", include("user.urls")),
     path("user_login/", include("user_login.urls")),
+    path('api/', include('volunteer_db.notifications_urls')),
 ]

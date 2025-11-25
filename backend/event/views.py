@@ -3,9 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
 from volunteer_db.models import EventDetails, UserProfile, VolunteerHistory, UserCredentials, Notification
-from .serializers import VolunteerSerializer, MatchRequestSerializer, EventDetailsSerializer, VolunteerHistorySerializer
+from .serializers import VolunteerSerializer, MatchRequestSerializer, EventDetailsSerializer, VolunteerHistorySerializer, NotificationSerializer
 from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import PermissionDenied
+from volunteer_db.utils import create_notification
 
 
 # add "@permission_classes([IsAuthenticated])" above your endpoints if a user needs to be logged in to make this API call. More often than not, they will need to be
@@ -91,9 +92,10 @@ def create_event(request):
     data = request.data
     serializer = EventDetailsSerializer(data=data)
     if serializer.is_valid():
-        serializer.save()
+        event = serializer.save()
+        create_notification(recipient=UserProfile.objects.get(user=request.user), message=f"Event '{event.event_name}' created successfully.")
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 @api_view(["PUT", "DELETE"])
 @permission_classes([IsAuthenticated])
@@ -107,16 +109,20 @@ def update_or_delete_event(request, pk):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == "DELETE":
+        event_name = event.event_name
         event.delete()
+        user_profile = UserProfile.objects.get(user=request.user)
+        create_notification(recipient=user_profile, message=f"Event '{event_name}' deleted successfully.")
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     elif request.method == "PUT":
         data = request.data
         serializer = EventDetailsSerializer(event, data=data)
         if serializer.is_valid():
-            serializer.save()
+            updated_event = serializer.save()
+            user_profile = UserProfile.objects.get(user=request.user)
+            create_notification(recipient=user_profile, message=f"Event '{updated_event.event_name}' updated successfully.")
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 @api_view(["POST"])
@@ -176,14 +182,15 @@ def match_volunteers(request):
     history_entry, created = VolunteerHistory.objects.get_or_create(
         user=volunteer_profile.user,
         event=event_obj,
+        participation_date=event_obj.start_date.date(),
         defaults={
             "user_profile": volunteer_profile,
             "match_type": match_type
         }
     )
 
-    Notification.objects.create(
-        recipient=volunteer_profile.user,
+    create_notification(
+        recipient=volunteer_profile,
         message=f"You were {'manually' if match_type=='manual' else 'automatically'} matched to event '{event_obj.event_name}' on {event_obj.start_date}"
     )
 
@@ -232,10 +239,17 @@ def delete_match(request, volunteer_name):
         return Response({"error": "Volunteer not found."}, status=404)
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def get_notifications(request):
-    notifications = Notification.objects.select_related("recipient").all().order_by("-timestamp")
-    data = [{"to": n.recipient.username, "message": n.message, "timestamp": n.timestamp.isoformat()} for n in notifications]
-    return Response(data)
+    try:
+        user_profile = UserProfile.objects.get(user=request.user)
+        notifications = Notification.objects.filter(
+            recipient=user_profile
+        ).order_by("-timestamp")
+        serializer = NotificationSerializer(notifications, many=True)
+        return Response(serializer.data)
+    except UserProfile.DoesNotExist:
+        return Response({"error": "User profile not found."}, status=404)
 
 @api_view(["POST"])
 def send_notification(request):
@@ -245,11 +259,11 @@ def send_notification(request):
         return Response({"error": "Both 'to' and 'message' are required."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        user = UserCredentials.objects.get(username=to_username)
-    except UserCredentials.DoesNotExist:
+        user_profile = UserProfile.objects.get(user__username=to_username)
+    except UserProfile.DoesNotExist:
         return Response({"error": "Recipient not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    Notification.objects.create(recipient=user, message=message)
+    create_notification(recipient=user_profile, message=message)
     return Response({"status": "sent"}, status=status.HTTP_201_CREATED)
 
 
@@ -262,9 +276,12 @@ def assign_volunteer(request):
     data = request.data
     serializer = VolunteerHistorySerializer(data=data)
     if serializer.is_valid():
-        serializer.save()
+        assignment = serializer.save()
+        create_notification(
+            recipient=assignment.user_profile,
+            message=f"You have been assigned to event '{assignment.event.event_name}'."
+        )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
@@ -273,10 +290,15 @@ def unassign_volunteer(request, event, user, user_profile):
         raise PermissionDenied("You do not have permission to do this")
     
     try:
-        assigned_event = VolunteerHistory.objects.filter(event=event, user=user, user_profile=user_profile)
+        assigned_event = VolunteerHistory.objects.get(event=event, user=user, user_profile=user_profile)
     except VolunteerHistory.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    
+
+    create_notification(
+        recipient=assigned_event.user_profile,
+        message=f"You have been unassigned from event '{assigned_event.event.event_name}'."
+    )
+
     assigned_event.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
 

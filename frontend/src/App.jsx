@@ -35,6 +35,7 @@ function App() {
           <Route path="/portal/admin" element={<AdminPortalLayout />}>
             <Route path="event-management" element={<EventManagement/>}/>
             <Route path="volunteers" element={<VolunteerList/>}/>
+            <Route path="volunteer-matching" element={<VolunteerMatching />} />
           </Route>
           
         </Routes>

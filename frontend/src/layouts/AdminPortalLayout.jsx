@@ -9,6 +9,7 @@ const AdminPortalLayout = () => {
           <div className="flex justify-around pb-2">
             <NavLink to="volunteers"><span className="border-2 rounded-md p-1">Volunteers</span></NavLink>
             <NavLink to="event-management"><span className="border-2 rounded-md p-1">Event Management</span></NavLink>
+            <NavLink to="volunteer-matching"><span className="border-2 rounded-md p-1">Volunteer Matching</span></NavLink>
           </div>
         </nav>
       </div>

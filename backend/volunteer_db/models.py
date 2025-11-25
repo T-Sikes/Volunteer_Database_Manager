@@ -205,27 +205,17 @@ class VolunteerHistory(models.Model):
     ]
     
     MATCH_CHOICES = [
-    ('manual', 'Manual'),
-    ('auto', 'Automatic'),
+        ('manual', 'Manual'),
+        ('auto', 'Automatic'),
     ]
 
-    match_type = models.CharField(
-        max_length=10,
-        choices=MATCH_CHOICES,
-        default='auto',
-    )
-    
     user = models.ForeignKey(UserCredentials, on_delete=models.CASCADE)
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     event = models.ForeignKey(EventDetails, on_delete=models.CASCADE)
     participation_date = models.DateField(default=timezone.now)
     hours_served = models.PositiveIntegerField(default=0)
-    status = models.CharField(
-        max_length=20, 
-        choices=STATUS_CHOICES, 
-        default='pending'
-    )
-    match_type = models.CharField(max_length=20, null=True, blank=True)  # 'manual' or 'auto' 
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    match_type = models.CharField(max_length=10, choices=MATCH_CHOICES, default='auto')
     timestamp = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
@@ -234,18 +224,18 @@ class VolunteerHistory(models.Model):
     class Meta:
         verbose_name = "Volunteer History"
         verbose_name_plural = "Volunteer Histories"
-        
+        unique_together = ("user", "event", "participation_date")   
 # =========================
 #  NOTIFICATIONS TABLE
 # =========================
 
 class Notification(models.Model):
-    recipient = models.ForeignKey(UserCredentials, on_delete=models.CASCADE, related_name="notifications")
+    recipient = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Notification to {self.recipient.username} at {self.timestamp}"
+        return f"Notification to {self.recipient.user.username} at {self.timestamp}"
 
     class Meta:
         verbose_name = "Notification"
