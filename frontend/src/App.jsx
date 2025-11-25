@@ -33,6 +33,7 @@ function App() {
 
           {/* Routes for admin portal */}
           <Route path="/portal/admin" element={<AdminPortalLayout />}>
+            <Route path="profile" element={<UserProfile/>}/>
             <Route path="event-management" element={<EventManagement/>}/>
             <Route path="volunteers" element={<VolunteerList/>}/>
             <Route path="volunteer-matching" element={<VolunteerMatching />} />

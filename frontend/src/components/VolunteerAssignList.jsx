@@ -150,7 +150,7 @@ const VolunteerAssignList = (props) => {
                 <div>
                   <p>{volunteer.full_name} (ID: {volunteer.id}) </p>
                   <p><span className="font-medium">Skills:</span> {volunteer.skills}</p>
-                  <p><span className="font-medium">Location:</span> {volunteer.city}, {volunteer.state}</p>
+                  <p><span className="font-medium">Location:</span> {volunteer.city}, {volunteer.state}, {volunteer.zipcode}</p>
                 </div>
                 {(isAssignedMap[volunteer.id] ?? false) && 
                   <p className="text-green-600"> Assigned </p>

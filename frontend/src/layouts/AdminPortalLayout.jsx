@@ -7,9 +7,10 @@ const AdminPortalLayout = () => {
         <p className="text-center text-white text-4xl">Admin Portal</p>
         <nav className="mt-3">
           <div className="flex justify-evenly pb-6">
+            <NavLink to="profile"><span className="border-2 rounded-md p-1 text-white">Profile</span></NavLink>
             <NavLink to="volunteers"><span className="border-2 rounded-md p-1 text-white">Volunteers</span></NavLink>
             <NavLink to="event-management"><span className="border-2 rounded-md p-1 text-white">Event Management</span></NavLink>
-            <NavLink to="volunteer-matching"><span className="border-2 rounded-md p-1">Volunteer Matching</span></NavLink>
+            <NavLink to="volunteer-matching"><span className="border-2 rounded-md p-1 text-white">Volunteer Matching</span></NavLink>
           </div>
         </nav>
       </div>

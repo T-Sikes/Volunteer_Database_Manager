@@ -115,7 +115,7 @@ function VolunteerHistory(props) {
       ) : (
         <div className="flex justify-center items-start min-h-screen w-screen bg-gray-50 py-10">
           <div className="w-full max-w-5xl bg-white shadow-lg rounded-lg p-6">
-            <h1 className="text-2xl font-bold mb-6 text-gray-800 text-center">Volunteer History</h1>
+            <h1 className="text-2xl font-bold mb-6 text-gray-800 text-center">{!props.user ? "Volunteer History" : `${props.volunteerName}'s History`}</h1>
             <div className="overflow-x-auto">
               <table className="min-w-full border border-gray-300">
                 <thead className="bg-gray-200">
