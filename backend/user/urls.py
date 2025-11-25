@@ -3,7 +3,8 @@ from .views import (
     get_user_profile, save_user_profile,
     get_volunteer_history, save_volunteer_record,
     get_events, get_current_user,
-    get_volunteer_history_from_user_id
+    get_volunteer_history_from_user_id,
+    export_reports_csv, export_reports_pdf
 )
 
 #endpoint definitons
@@ -22,4 +23,9 @@ urlpatterns = [
 
     # Events
     path('events/', get_events),
+
+    # export
+    path('export/reports-csv/', export_reports_csv),
+    path('export/reports-pdf/', export_reports_pdf),
 ]
+

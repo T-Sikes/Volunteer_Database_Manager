@@ -3,6 +3,47 @@ import AxiosInstance from "../components/AxiosInstance"
 import { parse, format } from 'date-fns';
 import VolunteerHistory from './VolunteerHistory';
 
+
+const ExportButtons = () => {
+  const handleExport = async (endpoint, filename) => {
+    try {
+      const response = await AxiosInstance.get(endpoint, {
+        responseType: 'blob'
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Export failed. Please try again.');
+    }
+  };
+
+  return (
+    <div className="flex space-x-4 mb-6 justify-center">
+      <button 
+        onClick={() => handleExport('user/export/reports-csv/', 'volunteer_reports.csv')}
+        className="bg-grey text-[#3fA2A5] px-4 py-2 rounded hover:bg-[#2d7a7c] transition-colors border-2 border-[#3fA2A5]"
+      >
+        Export CSV Report
+      </button>
+      <button 
+        onClick={() => handleExport('user/export/reports-pdf/', 'volunteer_reports.pdf')}
+        className="bg-grey text-[#3fA2A5] px-4 py-2 rounded hover:bg-gray-100 transition-colors border-2 border-[#3fA2A5]"
+      >
+        Export PDF Report
+      </button>
+    </div>
+  );
+};
+
 const VolunteerList = () => {
   const [volunteers, setVolunteers] = useState([])
   const [showInfo, setShowInfo] = useState(false)
@@ -35,23 +76,29 @@ const VolunteerList = () => {
 
   // Format availability JSON to readable format
   const formatAvailability = (availabilityJson) => {
-    const daysOrder = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-    
-    return daysOrder.map(day => {
-      const dayData = availabilityJson[day]
-      const dayName = day.charAt(0).toUpperCase() + day.slice(1)
-      
-      if (!dayData.available) {
-        return `${dayName}: Not available`
-      }
-      
-      // Parse 24-hour time and convert to 12-hour format with AM/PM
-      const startTime = format(parse(dayData.start, 'HH:mm', new Date()), 'h:mm a')
-      const endTime = format(parse(dayData.end, 'HH:mm', new Date()), 'h:mm a')
-      
-      return `${dayName}: ${startTime} - ${endTime}`
-    }).join('\n')
+  // First check if availabilityJson exists and is an object
+  if (!availabilityJson || typeof availabilityJson !== 'object') {
+    return "Availability not set";
   }
+  
+  const daysOrder = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+  
+  return daysOrder.map(day => {
+    const dayData = availabilityJson[day]
+    const dayName = day.charAt(0).toUpperCase() + day.slice(1)
+    
+    // Check if dayData exists and has the available property
+    if (!dayData || !dayData.available) {
+      return `${dayName}: Not available`
+    }
+    
+    // Parse 24-hour time and convert to 12-hour format with AM/PM
+    const startTime = format(parse(dayData.start, 'HH:mm', new Date()), 'h:mm a')
+    const endTime = format(parse(dayData.end, 'HH:mm', new Date()), 'h:mm a')
+    
+    return `${dayName}: ${startTime} - ${endTime}`
+  }).join('\n')
+}
 
   return (
     <div className="min-h-screen min-w-screen flex justify-center">
@@ -113,6 +160,7 @@ const VolunteerList = () => {
       }
       {showVolunteerList &&
         <div>
+          <ExportButtons />
           <h2 className="text-2xl text-center">Volunteers</h2>
           <div className="w-2xl">
             {volunteers.map(volunteer => (

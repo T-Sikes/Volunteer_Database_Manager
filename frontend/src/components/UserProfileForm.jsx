@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import {formatInTimeZone} from 'date-fns-tz';
 
 function UserProfileForm({ submitProfile, closeForm, initialData }) {
   //------------- form state -------------
@@ -10,20 +11,17 @@ function UserProfileForm({ submitProfile, closeForm, initialData }) {
   const [zip, setZip] = useState(initialData?.zip_code || '');
   const [skills, setSkills] = useState(initialData?.skills || []);
   const [preferences, setPreferences] = useState(initialData?.preferences || '');
-  const [availability, setAvailability] = useState(() => {
-  if (initialData?.availability) {
-    return initialData.availability;
-  }
-  return {
-    monday: { available: false, start: '09:00', end: '17:00' },
-    tuesday: { available: false, start: '09:00', end: '17:00' },
-    wednesday: { available: false, start: '09:00', end: '17:00' },
-    thursday: { available: false, start: '09:00', end: '17:00' },
-    friday: { available: false, start: '09:00', end: '17:00' },
-    saturday: { available: false, start: '09:00', end: '17:00' },
-    sunday: { available: false, start: '09:00', end: '17:00' }
-  };
-});
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
+  const [availability, setAvailability] = useState({
+      monday: { available: false, start: '09:00', end: '17:00' },
+      tuesday: { available: false, start: '09:00', end: '17:00' },
+      wednesday: { available: false, start: '09:00', end: '17:00' },
+      thursday: { available: false, start: '09:00', end: '17:00' },
+      friday: { available: false, start: '09:00', end: '17:00' },
+      saturday: { available: false, start: '09:00', end: '17:00' },
+      sunday: { available: false, start: '09:00', end: '17:00' }
+  });
   const [skillsDropdownOpen, setSkillsDropdownOpen] = useState(false);
  
 
@@ -37,8 +35,48 @@ useEffect(() => {
       setZip(initialData.zip_code || '');
       setSkills(initialData.skills || []);
       setPreferences(initialData.preferences || '');
+       // Convert UTC availability to local time
+      if (initialData.availability) {
+        console.log('Converting UTC to local:', initialData.availability);
+        const localAvailability = {};
+        for (const [day, dayData] of Object.entries(initialData.availability)) {
+          if (dayData.available) {
+            const localStart = formatInTimeZone(
+              new Date(`1970-01-01T${dayData.start}:00Z`),
+              userTimeZone,
+              'HH:mm'
+            );
+            const localEnd = formatInTimeZone(
+              new Date(`1970-01-01T${dayData.end}:00Z`),
+              userTimeZone,
+              'HH:mm'
+            );
+            
+            console.log(`${day}: UTC ${dayData.start}-${dayData.end} -> Local ${localStart}-${localEnd}`);
+            
+            localAvailability[day] = {
+              available: true,
+              start: localStart,
+              end: localEnd
+            };
+          } else {
+            localAvailability[day] = { available: false };
+          }
+        }
+        console.log('Setting converted availability:', localAvailability);
+        setAvailability(localAvailability);
+      }
     }
-  }, [initialData]);
+  }, [initialData, userTimeZone]);
+
+
+  useEffect(() => {
+  console.log('Initial availability data:', initialData?.availability);
+}, [initialData]);
+
+ useEffect(() => {
+    console.log('Current availability state:', availability);
+  }, [availability]);
 
 const allSkills = ["JavaScript", "Python", "C++", "Customer Service", "Microsoft Office", "Leadership", "SQL"];
 const allStates = [
@@ -70,10 +108,10 @@ const allStates = [
 ]
 
 
-  const handleSubmit = (e) => {
+   const handleSubmit = (e) => {
     e.preventDefault();
 
-    //validation
+    // Validation
     if (!fullName) return alert('Full Name is required');
     if (!address1) return alert('Address 1 is required');
     if (!city) return alert('City is required');
@@ -83,9 +121,33 @@ const allStates = [
 
     const availableDays = Object.values(availability).filter(day => day.available).length;
     if (availableDays === 0) return alert('Select at least one available day');
+    
+    // Convert local times back to UTC for storage
+    const formattedAvailability = {};
+    for (const [day, dayData] of Object.entries(availability)) {
+      if (dayData.available) {
+        formattedAvailability[day] = {
+          available: true,
+          start: formatInTimeZone(new Date(`1970-01-01T${dayData.start}:00`), 'UTC', 'HH:mm'),
+          end: formatInTimeZone(new Date(`1970-01-01T${dayData.end}:00`), 'UTC', 'HH:mm')
+        };
+      } else {
+        formattedAvailability[day] = { available: false };
+      }
+    }
 
-    // send data to parent
-    submitProfile({ full_name: fullName, address1, address2, city, state, zip_code: zip, skills, preferences, availability});
+    // Send data to parent
+    submitProfile({ 
+      full_name: fullName, 
+      address1, 
+      address2, 
+      city, 
+      state, 
+      zip_code: zip, 
+      skills, 
+      preferences, 
+      availability: formattedAvailability 
+    });
   }
 
   const handleCancel = (e) => {

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import UserProfileForm from "../components/UserProfileForm.jsx";
 import axiosInstance from "../components/AxiosInstance.jsx";
+import { formatInTimeZone} from "date-fns-tz";
 
 
 function UserProfile() {
@@ -9,6 +10,7 @@ function UserProfile() {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     
   useEffect(() => {
@@ -59,27 +61,38 @@ function UserProfile() {
 
 
 const formatAvailabilityForDisplay = (availability) => {
-  if (!availability || typeof availability !== 'object') return "Not set";
-  
-  const days = [
-    { key: 'monday', name: 'Monday' },
-    { key: 'tuesday', name: 'Tuesday' },
-    { key: 'wednesday', name: 'Wednesday' },
-    { key: 'thursday', name: 'Thursday' },
-    { key: 'friday', name: 'Friday' },
-    { key: 'saturday', name: 'Saturday' },
-    { key: 'sunday', name: 'Sunday' }
-  ];
+    if (!availability || typeof availability !== 'object') return "Not set";
+    
+    const days = [
+      { key: 'monday', name: 'Monday' },
+      { key: 'tuesday', name: 'Tuesday' },
+      { key: 'wednesday', name: 'Wednesday' },
+      { key: 'thursday', name: 'Thursday' },
+      { key: 'friday', name: 'Friday' },
+      { key: 'saturday', name: 'Saturday' },
+      { key: 'sunday', name: 'Sunday' }
+    ];
 
-  const availableDays = days
-    .filter(day => availability[day.key]?.available)
-    .map(day => {
-      const timeSlot = availability[day.key];
-      return `${day.name} ${timeSlot.start}-${timeSlot.end}`;
-    });
+    const availableDays = days
+      .filter(day => availability[day.key]?.available)
+      .map(day => {
+        const timeSlot = availability[day.key];
+        // Convert UTC to local for display
+        const localStart = formatInTimeZone(
+          new Date(`1970-01-01T${timeSlot.start}:00Z`),
+          userTimeZone,
+          'HH:mm'
+        );
+        const localEnd = formatInTimeZone(
+          new Date(`1970-01-01T${timeSlot.end}:00Z`),
+          userTimeZone,
+          'HH:mm'
+        );
+        return `${day.name} ${localStart}-${localEnd}`;
+      });
 
-  return availableDays.length > 0 ? availableDays.join(', ') : "Not available";
-};
+    return availableDays.length > 0 ? availableDays.join(', ') : "Not available";
+  };
 
   const toggleForm = () => setShowForm(!showForm);
 
