@@ -60,7 +60,7 @@ function EventForm(props) {
   const handleSave = (e) => {
     e.preventDefault()
     const form = formRef.current;
-    const isError = false;
+    let isError = false;
 
     if (selectedSkills.length > 0){
       setNoSelectedSkills(false)

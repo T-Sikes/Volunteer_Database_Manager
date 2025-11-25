@@ -82,10 +82,10 @@ const VolunteerAssignList = (props) => {
                   <p><span className="font-medium">Location:</span> {volunteer.city}, {volunteer.state}, {volunteer.zipcode}</p>
                   <p><span className="font-medium">Preferences:</span> {volunteer.preferences}</p>
                 </div>
-                {(isAssignedMap[volunteer.id] ?? false) && 
+                {(isAssignedMap[volunteer.id]) && 
                   <p className="text-green-600"> Assigned </p>
                 }
-                {(!isAvailableMap[volunteer.id] ?? false) && 
+                {(!isAvailableMap[volunteer.id]) && 
                   <p className="text-red-600"> Not Available </p>
                 }
               </div>
