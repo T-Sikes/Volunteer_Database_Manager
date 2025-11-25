@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import VolunteerHistoryForm from "../components/VolunteerHistoryForm.jsx";
 import AxiosInstance from "../components/AxiosInstance.jsx";
 
-function VolunteerHistory() {
+function VolunteerHistory(props) {
   const [showForm, setShowForm] = useState(false);
   const [historyData, setHistoryData] = useState([]);
   const [events, setEvents] = useState([]); // For the form dropdown
@@ -11,6 +11,7 @@ function VolunteerHistory() {
   
    // Get current user first
   useEffect(() => {
+    if(!props.user){
     console.log("🔄 Getting current user for volunteer history...");
     AxiosInstance.get('user/current/')
       .then(response => {
@@ -23,11 +24,12 @@ function VolunteerHistory() {
       .catch(err => {
         console.error("❌ Error getting current user:", err);
       });
-  }, []);
+  }}, []);
 
 
 // Pull existing volunteer history from backend
   useEffect(() => {
+    if(!props.user){
     if (!currentUsername) return; // Wait until we have username
     
     console.log("🔄 Fetching volunteer history for:", currentUsername);
@@ -39,7 +41,20 @@ function VolunteerHistory() {
       .catch(err => {
         console.error("❌ Failed to fetch history:", err);
       });
-  }, [currentUsername]);
+  }}, [currentUsername]);
+
+  useEffect(() => {
+    if(props.user){
+      AxiosInstance.get(`user/history/user/${props.user}/`)
+        .then(response => {
+          console.log("✅ Volunteer history data:", response.data);
+          setHistoryData(response.data);
+        })
+        .catch(err => {
+          console.error("❌ Failed to fetch history:", err);
+        });
+  }}, []);
+  
 
  // Pull events from backend
   useEffect(() => {

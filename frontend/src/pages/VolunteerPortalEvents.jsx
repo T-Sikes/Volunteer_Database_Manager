@@ -55,7 +55,7 @@ const VolunteerPortalEvents = () => {
   return (
     <div className="h-screen w-screen">
       {showEventInfo && 
-        <div className="flex absolute inset-0 z-10 bg-[rgba(0,0,0,0.5)] h-screen w-screen justify-center items-center">
+        <div className="flex justify-center items-start py-10 fixed inset-0 z-10 bg-[rgba(0,0,0,0.5)] overflow-y-auto">
           <div className="flex flex-col bg-white border-gray-500 border-2 h-fit w-fit p-10 rounded-lg">
             <div className="flex flex-col text-xl">
               <p><span className="font-bold">Name:</span> {clickedEventDetails.event_name}</p>
@@ -75,7 +75,7 @@ const VolunteerPortalEvents = () => {
           </div>
         </div>
       }
-      <div className="h-[89%] w-screen px-5 relative z-0">
+      <div className="h-[80%] w-screen px-20 relative z-0">
         <FullCalendar
           plugins={[ dayGridPlugin ]}
           initialView="dayGridMonth"
