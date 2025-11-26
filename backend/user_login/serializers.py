@@ -10,8 +10,8 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}, 'username': {'required': False}}
 
     def create(self, validated_data):
-        email=validated_data.get('email'),
-        username=validated_data('username', email) # default to email if username doesn't exist
+        email=validated_data.get('email')
+        username=validated_data.get('username', email) # default to email if username doesn't exist
 
         user = User.objects.create_user(
             email=email,
