@@ -49,9 +49,10 @@ function UserLogin() {
         localStorage.setItem('token', data.token);
         setMessage(`${action} successful! Token saved.`);
         console.log(`${action} response:`, data);
+
         getUserStatus()
       } else {
-        setMessage(`Error: ${JSON.stringify(data)}`);
+        setMessage(`Incorrect email or password`);
         console.log("Error response:", data);
       }
     } catch (err) {
