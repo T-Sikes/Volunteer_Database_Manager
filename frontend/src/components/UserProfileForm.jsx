@@ -78,7 +78,7 @@ useEffect(() => {
     console.log('Current availability state:', availability);
   }, [availability]);
 
-const allSkills = ["JavaScript", "Python", "C++", "Customer Service", "Microsoft Office", "Leadership", "SQL"];
+const allSkills = ["Bilingual/Multilingual", "Childcare", "Basic math", "Ability to lift 50 lbs", "Leadership", "Food prep", "Retail experience", "Computer literacy", "Cleaning and sanitation", "First aid/CPR", "Ability to use hand tools"];
 const allStates = [
     { code: "AL", name: "Alabama" }, { code: "AK", name: "Alaska" },
     { code: "AZ", name: "Arizona" }, { code: "AR", name: "Arkansas" },

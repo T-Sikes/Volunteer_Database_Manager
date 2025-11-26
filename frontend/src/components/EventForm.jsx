@@ -4,7 +4,7 @@ import "react-datepicker/dist/react-datepicker.css"
 import { formatInTimeZone } from "date-fns-tz"
 
 function EventForm(props) {
-  const skills = ["Bilingual/Multilingual", "Childcare", "Basic math", "Ability to lift 50 lbs", "Leadership", "Food prep", "Retail experience, Computer literacy", "Cleaning and sanitation", "First aid/CPR", "Ability to use hand tools"]
+  const skills = ["Bilingual/Multilingual", "Childcare", "Basic math", "Ability to lift 50 lbs", "Leadership", "Food prep", "Retail experience", "Computer literacy", "Cleaning and sanitation", "First aid/CPR", "Ability to use hand tools"]
   const states = ["AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"]
 
   const [eventData, setEventData] = useState({...props.openedEvent})
