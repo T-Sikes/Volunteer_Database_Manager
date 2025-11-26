@@ -305,6 +305,18 @@ def unassign_volunteer(request, event, user, user_profile):
     assigned_event.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
 
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_notification(request, notification_id):
+    try:
+        user_profile = UserProfile.objects.get(user=request.user)
+        notification = Notification.objects.get(id=notification_id, recipient=user_profile)
+        notification.delete()
+        return Response({"status": "Notification deleted"}, status=status.HTTP_200_OK)
+    except Notification.DoesNotExist:
+        return Response({"error": "Notification not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_events(request):

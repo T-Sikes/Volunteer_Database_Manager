@@ -10,6 +10,7 @@ const VolunteerPortalLayout = () => {
             <NavLink to="profile"><span className="border-2 rounded-md p-1 text-white">Profile</span></NavLink>
             <NavLink to="events"><span className="border-2 rounded-md p-1 text-white">Event Calendar</span></NavLink>
             <NavLink to="volunteer-history"><span className="border-2 rounded-md p-1 text-white">Volunteer History</span></NavLink>
+            <NavLink to="notifications"><span className="border-2 rounded-md p-1 text-white">Notifications</span></NavLink>
           </div>
         </nav>
       </div>

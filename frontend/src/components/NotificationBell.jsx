@@ -1,24 +1,20 @@
 import React, { useEffect, useState } from "react";
+import axios from "../components/AxiosInstance";
 
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
-    const fetchNotifications = () => {
-      fetch("http://127.0.0.1:8000/event/notifications/", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
-        .then(res => res.json())
-        .then(setNotifications)
-        .catch(err => console.error("Failed to fetch notifications:", err));
+    const load = () => {
+      axios.get("/event/notifications/")
+        .then(res => setNotifications(res.data))
+        .catch(err => console.error(err));
     };
 
-    fetchNotifications();
-
-    const interval = setInterval(fetchNotifications, 15000);
-
-    return () => clearInterval(interval);
+    load();
+    const i = setInterval(load, 15000);
+    return () => clearInterval(i);
   }, []);
 
   return (

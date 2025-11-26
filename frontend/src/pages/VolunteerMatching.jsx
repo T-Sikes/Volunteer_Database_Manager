@@ -158,7 +158,17 @@ useEffect(() => {
                 </span>
                 <button
                   onClick={() => handleRemove(idx)}
-                  className="ml-4 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+                  style={{
+                    backgroundColor: "#3fa2a5",
+                    color: "white"
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.backgroundColor = "black";
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.backgroundColor = "#3fa2a5";
+                  }}
+                  className="ml-4 px-3 py-1 rounded transition"
                 >
                   Remove
                 </button>
