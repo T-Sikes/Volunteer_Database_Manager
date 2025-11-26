@@ -129,26 +129,65 @@ export default function VolunteerMatchingForm({
       </div>
 
       <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-[#a5d9da]">
+        {/* Auto-Match */}
         <button
           type="button"
           onClick={handleAutoMatch}
-          className={`py-3 px-6 rounded-lg font-medium transition duration-200 ${selectedVolunteer ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
+          disabled={!selectedVolunteer}
+          style={{
+            backgroundColor: selectedVolunteer ? "#3fa2a5" : "#9ca3af",
+            color: "white",
+            cursor: selectedVolunteer ? "pointer" : "not-allowed"
+          }}
+          onMouseEnter={e => {
+            if (selectedVolunteer) e.currentTarget.style.backgroundColor = "black";
+          }}
+          onMouseLeave={e => {
+            if (selectedVolunteer) e.currentTarget.style.backgroundColor = "#3fa2a5";
+          }}
+          className="py-3 px-6 rounded-lg font-medium transition duration-200"
         >
           Auto-Match Volunteer
         </button>
 
+        {/* Manual Match */}
         <button
           type="button"
           onClick={handleManualMatch}
-          className={`py-3 px-6 rounded-lg font-medium transition duration-200 ${selectedVolunteer && selectedEvent ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
+          disabled={!(selectedVolunteer && selectedEvent)}
+          style={{
+            backgroundColor: selectedVolunteer && selectedEvent ? "#3fa2a5" : "#9ca3af",
+            color: "white",
+            cursor: selectedVolunteer && selectedEvent ? "pointer" : "not-allowed"
+          }}
+          onMouseEnter={e => {
+            if (selectedVolunteer && selectedEvent)
+              e.currentTarget.style.backgroundColor = "black";
+          }}
+          onMouseLeave={e => {
+            if (selectedVolunteer && selectedEvent)
+              e.currentTarget.style.backgroundColor = "#3fa2a5";
+          }}
+          className="py-3 px-6 rounded-lg font-medium transition duration-200"
         >
           Manual Match
         </button>
 
+        {/* Cancel */}
         <button
           type="button"
           onClick={handleCancel}
-          className="bg-gray-500 text-white py-3 px-6 rounded-lg hover:bg-gray-600 transition duration-200 font-medium"
+          style={{
+            backgroundColor: "#3fa2a5",
+            color: "white"
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.backgroundColor = "black";
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.backgroundColor = "#3fa2a5";
+          }}
+          className="py-3 px-6 rounded-lg font-medium transition duration-200"
         >
           Cancel
         </button>
