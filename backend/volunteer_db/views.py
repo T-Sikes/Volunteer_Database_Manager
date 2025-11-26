@@ -3,14 +3,19 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Notification
 from .serializers import NotificationSerializer
-
+from volunteer_db.models import UserProfile
 
 # Return notifications for a specific user
 class NotificationListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        notifications = Notification.objects.filter(recipient=request.user).order_by("-timestamp")
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+        except UserProfile.DoesNotExist:
+            return Response({"error": "User profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        notifications = Notification.objects.filter(recipient=user_profile).order_by("-timestamp")
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
 
