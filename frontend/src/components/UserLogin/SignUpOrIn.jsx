@@ -6,9 +6,6 @@ function SignUpOrIn(props) {
       <button className={buttonStyle} onClick={props.onClick}> Sign up </button>
       : 
       <>
-      <div className='text-black mb-4'>Forgot Password?
-        <span className='text-[#3fA2A5]'> Click here!</span>
-      </div> 
       <button className={buttonStyle} onClick={props.onClick}>Sign in</button> 
       </>
     }
