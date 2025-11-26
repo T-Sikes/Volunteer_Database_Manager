@@ -37,7 +37,7 @@ def login(request):
 def signup(request):
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
-       email=serializer.validated_data['email'],
+       email=serializer.validated_data['email']
        username=serializer.validated_data.get('username', email),
 
        user = User.objects.create_user(
