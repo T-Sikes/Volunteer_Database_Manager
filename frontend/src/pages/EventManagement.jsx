@@ -227,7 +227,7 @@ function EventManagement() {
 
   const unassignVolunteer = async (eventID, volunteer) => {
     try{
-      const response = await AxiosInstance.delete(`event/unassign/${eventID}/${volunteer.user}/${volunteer.id}`)
+      const response = await AxiosInstance.delete(`event/unassign/${eventID}/${volunteer.user}/${volunteer.id}/`)
     } catch (err) {
       console.log(err)
     }

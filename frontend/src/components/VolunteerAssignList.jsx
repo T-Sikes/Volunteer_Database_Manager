@@ -28,7 +28,7 @@ const VolunteerAssignList = (props) => {
 
   const unassignVolunteer = async (eventID, sv) => {
     try{
-      const response = await AxiosInstance.delete(`event/unassign/${eventID}/${sv.user}/${sv.user_profile}`)
+      const response = await AxiosInstance.delete(`event/unassign/${eventID}/${sv.user}/${sv.user_profile}/`)
       setIsAssignedMap(prevState => { return {...prevState, [sv.user_profile]: false}})
       setSelectedVolunteer(null)
     } catch (err) {
