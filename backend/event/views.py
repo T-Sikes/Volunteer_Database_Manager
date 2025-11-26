@@ -95,6 +95,7 @@ def create_event(request):
         event = serializer.save()
         create_notification(recipient=UserProfile.objects.get(user=request.user), message=f"Event '{event.event_name}' created successfully.")
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 @api_view(["PUT", "DELETE"])
@@ -123,6 +124,7 @@ def update_or_delete_event(request, pk):
             user_profile = UserProfile.objects.get(user=request.user)
             create_notification(recipient=user_profile, message=f"Event '{updated_event.event_name}' updated successfully.")
             return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 @api_view(["POST"])
@@ -282,6 +284,7 @@ def assign_volunteer(request):
             message=f"You have been assigned to event '{assignment.event.event_name}'."
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
