@@ -74,8 +74,35 @@ const VolunteerList = () => {
     }
   }
 
-  // Format availability JSON to readable format
-  const formatAvailability = (availabilityJson) => {
+//   // Format availability JSON to readable format
+//   const formatAvailability = (availabilityJson) => {
+//   // First check if availabilityJson exists and is an object
+//   if (!availabilityJson || typeof availabilityJson !== 'object') {
+//     return "Availability not set";
+//   }
+  
+//   const daysOrder = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+  
+//   return daysOrder.map(day => {
+//     const dayData = availabilityJson[day]
+//     const dayName = day.charAt(0).toUpperCase() + day.slice(1)
+    
+//     // Check if dayData exists and has the available property
+//     if (!dayData || !dayData.available) {
+//       return `${dayName}: Not available`
+//     }
+    
+//     // Parse 24-hour time and convert to 12-hour format with AM/PM
+//     const startTime = format(parse(dayData.start, 'HH:mm', new Date()), 'h:mm a')
+//     const endTime = format(parse(dayData.end, 'HH:mm', new Date()), 'h:mm a')
+    
+//     return `${dayName}: ${startTime} - ${endTime}`
+//   }).join('\n')
+// }
+
+// Format availability JSON to readable format
+
+const formatAvailability = (availabilityJson) => {
   // First check if availabilityJson exists and is an object
   if (!availabilityJson || typeof availabilityJson !== 'object') {
     return "Availability not set";
@@ -92,9 +119,16 @@ const VolunteerList = () => {
       return `${dayName}: Not available`
     }
     
-    // Parse 24-hour time and convert to 12-hour format with AM/PM
-    const startTime = format(parse(dayData.start, 'HH:mm', new Date()), 'h:mm a')
-    const endTime = format(parse(dayData.end, 'HH:mm', new Date()), 'h:mm a')
+    // Convert UTC time string to local time
+    const convertUtcToLocal = (timeString) => {
+      const [hours, minutes] = timeString.split(':')
+      const utcDate = new Date()
+      utcDate.setUTCHours(parseInt(hours), parseInt(minutes), 0, 0)
+      return format(utcDate, 'h:mm a')
+    }
+    
+    const startTime = convertUtcToLocal(dayData.start)
+    const endTime = convertUtcToLocal(dayData.end)
     
     return `${dayName}: ${startTime} - ${endTime}`
   }).join('\n')
