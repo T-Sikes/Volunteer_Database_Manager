@@ -6,6 +6,7 @@ import VolunteerAssignList from "../components/VolunteerAssignList.jsx"
 import AxiosInstance from "../components/AxiosInstance.jsx"
 import { format, parse } from "date-fns"
 import EventList from "../components/EventList.jsx"
+import { formatInTimeZone } from "date-fns-tz"
 
 function EventManagement() {
   
@@ -89,8 +90,8 @@ function EventManagement() {
       })
       setIsAssignedMap(mp)
 
-      const formattedStartDate = format(new Date(eventData.start_date), 'eeee, HH:mm').split(", ")
-      const formattedEndDate = format(new Date(eventData.end_date), 'eeee, HH:mm').split(", ")
+      const formattedStartDate = formatInTimeZone(new Date(eventData.start_date), "UTC", 'eeee, HH:mm').split(", ")
+      const formattedEndDate = formatInTimeZone(new Date(eventData.end_date), "UTC", 'eeee, HH:mm').split(", ")
       const startDate = {dayOfWeek: formattedStartDate[0], time: formattedStartDate[1]}
       const endDate = {dayOfWeek: formattedEndDate[0], time: formattedEndDate[1]}
       
@@ -109,7 +110,7 @@ function EventManagement() {
     const eventEndDayOfWeek = (evEndDate.dayOfWeek).toLowerCase()
     const eventEndTime = (evEndDate.time).toLowerCase()
 
-    if(!availability[eventStartDayOfWeek].available || !availability[eventEndDayOfWeek].available){
+    if(!availability[eventStartDayOfWeek]?.available || !availability[eventEndDayOfWeek]?.available){
       setIsAvailableMap(prevState => { return {...prevState, [volunteer.id]: false}})
       return
     }
@@ -129,7 +130,7 @@ function EventManagement() {
     const eventEndDayOfWeek = (evEndDate.dayOfWeek).toLowerCase()
     const eventEndTime = (evEndDate.time).toLowerCase()
 
-    if(!availability[eventStartDayOfWeek].available || !availability[eventEndDayOfWeek].available){
+    if(!availability[eventStartDayOfWeek]?.available || !availability[eventEndDayOfWeek]?.available){
       return false
     }
 

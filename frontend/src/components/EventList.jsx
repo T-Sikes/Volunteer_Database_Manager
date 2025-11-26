@@ -25,7 +25,7 @@ const EventList = (props) => {
                 <p className="mb-7">{format(new Date(event.extendedProps.eventData.start_date), 'MM/dd/yyyy')} | </p>
                 <div className="flex flex-col items-start ml-4">
                   <p>{event.extendedProps.eventData.event_name}</p>
-                  <p>{format(new Date(event.extendedProps.eventData.start_date), 'HH:mm aa')} - {format(new Date(event.extendedProps.eventData.end_date), 'HH:mm aa')}</p>
+                  <p>{format(new Date(event.extendedProps.eventData.start_date), 'hh:mm aa')} - {format(new Date(event.extendedProps.eventData.end_date), 'hh:mm aa')}</p>
                 </div>
             </div>
             <hr/>
