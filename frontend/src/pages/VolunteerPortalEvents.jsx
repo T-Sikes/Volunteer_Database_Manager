@@ -94,8 +94,10 @@ const VolunteerPortalEvents = () => {
             meridiem: "short"
           }}
         />
-      </div>  
-      <EventList eventsArray={eventsArray} eventClicked={eventClicked}/>
+      </div> 
+      <div className="mt-15">
+        <EventList eventsArray={eventsArray} eventClicked={eventClicked}/>
+      </div> 
     </div>
   )
 }
