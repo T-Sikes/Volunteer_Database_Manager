@@ -35,7 +35,7 @@ def _score_event_for_volunteer(event, volunteer):
 @permission_classes([IsAuthenticated])
 def get_events(request):
     try:
-        events = EventDetails.objects.all()
+        events = EventDetails.objects.all().order_by('-start_date')
         serializedData = EventDetailsSerializer(events, many=True).data
         
         return Response(
@@ -68,7 +68,7 @@ def get_events(request):
 @permission_classes([IsAuthenticated])
 def get_volunteers(request):
     try:
-        volunteers = UserProfile.objects.select_related("user").all()
+        volunteers = UserProfile.objects.select_related("user").all().order_by('full_name')
         serializedData = VolunteerSerializer(volunteers, many=True).data
         return Response(
             serializedData,
@@ -320,10 +320,10 @@ def get_user_events(request):
     try:
         # If admin, get all the events assigned to at least 1 volunteer
         if request.user.is_superuser:
-            events = VolunteerHistory.objects.select_related('event').all()
+            events = VolunteerHistory.objects.select_related('event').all().order_by('-event__start_date')
         # If volunteer, only get events specifically asigned to that volunteer
         else:
-            events = VolunteerHistory.objects.filter(user=request.user).select_related('event')
+            events = VolunteerHistory.objects.filter(user=request.user).select_related('event').order_by('-event__start_date')
         serializedData = VolunteerHistorySerializer(events, many=True).data
         
         return Response(
@@ -342,7 +342,7 @@ def get_user_events(request):
 @permission_classes([IsAuthenticated])
 def get_volunteers_for_event(request, event_id):
     try:
-        volunteers = VolunteerHistory.objects.filter(event=event_id).select_related('user_profile')
+        volunteers = VolunteerHistory.objects.filter(event=event_id).select_related('user_profile').order_by('user_profile__full_name')
         serializedData = VolunteerHistorySerializer(volunteers, many=True).data
         
         return Response(

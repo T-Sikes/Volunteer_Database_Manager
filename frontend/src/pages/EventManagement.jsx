@@ -5,6 +5,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import VolunteerAssignList from "../components/VolunteerAssignList.jsx"
 import AxiosInstance from "../components/AxiosInstance.jsx"
 import { format, parse } from "date-fns"
+import EventList from "../components/EventList.jsx"
 
 function EventManagement() {
   
@@ -57,6 +58,10 @@ function EventManagement() {
     } catch (err) {
       console.log(err)
     }
+  }
+
+  const sortEvents = (events) => {
+    return events.sort((a, b) => new Date(b.start) - new Date(a.start));
   }
 
   // Fetch all volunteers
@@ -163,7 +168,7 @@ function EventManagement() {
         event.extendedProps.eventData = data
         event.start = event.extendedProps.eventData.start_date
         event.end = event.extendedProps.eventData.end_date
-        setEventsArray(prevState => [...prevState, event])
+        setEventsArray(prevState => sortEvents([...prevState, event]))
       } catch (err) {
         console.log(err)
       }
@@ -182,7 +187,7 @@ function EventManagement() {
           const modifiedArray = [...prevState]
           const index = modifiedArray.findIndex(item => item.extendedProps.eventData.id == event.extendedProps.eventData.id)
           modifiedArray[index] = event
-          return modifiedArray  
+          return sortEvents(modifiedArray)  
       })
       } catch (err) {
         console.log(err)
@@ -194,9 +199,9 @@ function EventManagement() {
     const pk = clickedEvent.extendedProps.eventData.id
     try{
       const response = await AxiosInstance.delete(`event/${pk}/`)
-      setEventsArray(prevState => prevState.filter(
+      setEventsArray(prevState => sortEvents(prevState.filter(
         event => event.extendedProps.eventData.id !== pk
-      ))
+      )))
     } catch (err) {
       console.log(err)
     }
@@ -288,17 +293,20 @@ function EventManagement() {
   }
 
   // Function for showing showing event form when an event is clicked
-  const eventClicked = info => {
-    setClickedEvent(info.event)
+  const eventClicked = (e, fullCalendarEvent = true) => {
+    if(fullCalendarEvent)
+      e = e.event
+
+    setClickedEvent(e)
     fetchVolunteers()
-    fetchVolunteersForEvent(info.event.extendedProps.eventData)
+    fetchVolunteersForEvent(e.extendedProps.eventData)
     toggleEventForm()
   }
 
   return (
     <div className="h-screen w-screen">
       {(isScheduleConflict) && 
-        <div className="flex absolute justify-center items-center top-0 left-0 z-10 bg-[rgba(0,0,0,0.5)] min-h-full min-w-full">
+        <div className="flex justify-center items-start py-10 fixed inset-0 z-10 bg-[rgba(0,0,0,0.5)] overflow-y-auto">
           <div className="bg-white border-gray-500 border-2 h-fit w-3/5 p-10 rounded-lg">
             <p className="text-xl"> Changing the event to this date and time will result in the following volunteers 
               being unsassigned because they are unavailable. Do you wish to proceed?:</p>
@@ -362,8 +370,8 @@ function EventManagement() {
       }
       {/* Only show event form if showEventForm is true */}
       {showEventForm && 
-        <div className="flex absolute justify-center items-center top-0 left-0 z-10 bg-[rgba(0,0,0,0.5)] min-h-full min-w-full">
-          <div className="flex items-start">
+        <div className="flex justify-center items-start py-10 fixed inset-0 z-10 bg-[rgba(0,0,0,0.5)] overflow-y-auto">
+            <div className="flex items-start">
             <EventForm 
               openedEvent={clickedEvent ? clickedEvent.extendedProps.eventData : blankEvent} 
               submitEventForm={getEventFormData} 
@@ -391,13 +399,13 @@ function EventManagement() {
                 </div>
               </div>
             }
-          </div>
+            </div>
         </div>
       }
       {/* Volunteer assignment pop up */}
       {showVolunteerAssign &&
-        <div className="absolute inset-0 z-10 bg-[rgba(0,0,0,0.5)] h-screen w-screen">
-          <div className="absolute inset-0 m-auto h-fit w-fit">
+        <div className="flex justify-center items-start py-10 fixed inset-0 z-10 bg-[rgba(0,0,0,0.5)] overflow-y-auto">
+          <div className="h-fit w-fit">
             <VolunteerAssignList
               eventID={clickedEvent.extendedProps.eventData.id}
               eventData={clickedEvent.extendedProps.eventData}
@@ -409,18 +417,6 @@ function EventManagement() {
           </div>
         </div>
       }
-      <div className="h-[89%] w-screen px-5 relative z-0">
-        <FullCalendar
-          plugins={[ dayGridPlugin ]}
-          initialView="dayGridMonth"
-          events={eventsArray}
-          height="100%"
-          expandRows={true}
-          eventClick={eventClicked}
-          eventDisplay="block"
-          timeZone="local"
-        />
-      </div>
       <div className="flex justify-center h-fit mt-3">
         <button 
           onClick={() => {
@@ -429,9 +425,29 @@ function EventManagement() {
           }}
           className="!bg-[#3fA2A5] hover:!bg-[#203e3f] text-white"
         >
-          Add Event
+          <span className="text-2xl">+</span> Add Event
         </button>
       </div>  
+      <div className="h-[80%] w-screen px-20 relative z-0">
+        <FullCalendar
+          plugins={[ dayGridPlugin ]}
+          initialView="dayGridMonth"
+          events={eventsArray}
+          height="100%"
+          expandRows={true}
+          eventClick={eventClicked}
+          eventDisplay="list-item"
+          timeZone="local"
+          eventTimeFormat={{ 
+            hour: 'numeric',
+            minute: '2-digit',
+            meridiem: "short"
+          }}
+        />
+      </div>
+      <div className="mt-15">
+        <EventList eventsArray={eventsArray} eventClicked={eventClicked}/>
+      </div>
     </div>
   )
 }

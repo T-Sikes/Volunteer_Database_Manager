@@ -8,7 +8,7 @@ from rest_framework.authtoken.models import Token
 class UserLoginAPITest(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.signup_url = '/user_login/signup/'  # adjust if needed
+        self.signup_url = '/user_login/signup/'  
 
     def test_signup_valid(self):
         data = {
@@ -16,7 +16,7 @@ class UserLoginAPITest(TestCase):
             "password": "Pass1234!"
         }
         response = self.client.post(self.signup_url, data, format='json')
-        self.assertEqual(response.status_code, 201)  # or whatever your view returns
+        self.assertEqual(response.status_code, 201) 
 
     def test_signup_invalid(self):
         data = {"username": "", "password": ""}
@@ -28,7 +28,7 @@ class UserLoginAPITest(TestCase):
         self.client = APIClient()
         # Create a user to test login
         self.user = User.objects.create_user(username="zack@gmail.com", password="Pass1234!")
-        self.login_url = '/user_login/login/'  # make sure this matches your urls.py
+        self.login_url = '/user_login/login/' 
 
     def test_login_valid(self):
         data = {
