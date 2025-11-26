@@ -157,3 +157,34 @@ class TestTokenAPITest(TestCase):
         response = self.client.get(self.test_token_url)
         self.assertEqual(response.status_code, 403)
 
+
+class UserLogoutAPITest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        # Create a user and token
+        self.user = User.objects.create_user(email="logouttest@gmail.com", password="Pass1234!")
+        self.token = Token.objects.create(user=self.user)
+        self.logout_url = '/user_login/logout/'
+
+    def test_logout_authenticated(self):
+        # Test logout with valid token
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        response = self.client.post(self.logout_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('detail', response.data)
+        self.assertEqual(response.data['detail'], 'Successfully logged out')
+
+        # Verify token is deleted
+        self.assertFalse(Token.objects.filter(user=self.user).exists())
+
+    def test_logout_unauthenticated(self):
+        # Test logout without token
+        response = self.client.post(self.logout_url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_logout_invalid_token(self):
+        # Test logout with invalid token
+        self.client.credentials(HTTP_AUTHORIZATION='Token invalidtoken123')
+        response = self.client.post(self.logout_url)
+        self.assertEqual(response.status_code, 403)
+

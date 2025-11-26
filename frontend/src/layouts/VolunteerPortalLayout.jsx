@@ -1,6 +1,14 @@
-import { NavLink, Outlet } from "react-router-dom"
+import { NavLink, Outlet, useNavigate } from "react-router-dom"
+import { logoutUser } from "../components/UserLogin/Authentication"
 
 const VolunteerPortalLayout = () => {
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await logoutUser()
+    navigate("/user-login")
+  }
+
   return (
     <div>
       <div className="fixed top-0 z-10 bg-[#3fA2A5] w-screen">
@@ -11,10 +19,11 @@ const VolunteerPortalLayout = () => {
             <NavLink to="events"><span className="border-2 rounded-md p-1 text-white">Event Calendar</span></NavLink>
             <NavLink to="volunteer-history"><span className="border-2 rounded-md p-1 text-white">Volunteer History</span></NavLink>
             <NavLink to="notifications"><span className="border-2 rounded-md p-1 text-white">Notifications</span></NavLink>
+            <span onClick={handleLogout} className="cursor-pointer"><span className="border-2 rounded-md p-1 text-white">Logout</span></span>
           </div>
         </nav>
       </div>
-        
+
       <main>
         <div className="mt-32">
           <Outlet/>
